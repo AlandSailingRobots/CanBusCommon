@@ -15,6 +15,10 @@
 #define SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
 
 
+
+/**
+ * Used by marine sensor data message
+ */
 const int SENSOR_PH_DATASIZE = 1;
 const int SENSOR_PH_INTERVAL_MIN = 0;
 const int SENSOR_PH_INTERVAL_MAX = 14;
@@ -28,6 +32,11 @@ const int SENSOR_TEMPERATURE_INTERVAL_MIN = -5;
 const int SENSOR_TEMPERATURE_INTERVAL_MAX = 40;
 
 
+/**
+ * Used by marine sensor request message
+ */
+const int REQUEST_CONTINOUS_READINGS_DATASIZE = 1;
+const int REQUEST_READING_TIME_DATASIZE = 4;
 
 
 
