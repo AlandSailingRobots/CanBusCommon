@@ -11,8 +11,8 @@
 *
 ***************************************************************************************/
 
-#ifndef SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
-#define SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
+#ifndef SAILINGROBOT_CANBUS_DEFINITIONS_H
+#define SAILINGROBOT_CANBUS_DEFINITIONS_H
 
 #include "canbus_error_defs.h"
 #include "canbus_datamappings_defs.h"
@@ -20,4 +20,4 @@
 #include "canbus_id_defs.h"
 #include "canbus_struct_defs.h"
 
-#endif //SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
+#endif //SAILINGROBOT_CANBUS_DEFINITIONS_H

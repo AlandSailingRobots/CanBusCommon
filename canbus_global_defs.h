@@ -11,8 +11,8 @@
 *
 ***************************************************************************************/
 
-#ifndef	GLOBAL_H
-#define	GLOBAL_H
+#ifndef	CANBUS_GLOBAL_DEFS_H
+#define	CANBUS_GLOBAL_DEFS_H
 
 
-#endif	// GLOBAL_H
+#endif	// CANBUS_GLOBAL_DEFS_H
