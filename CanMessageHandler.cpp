@@ -55,15 +55,20 @@ double CanMessageHandler::getMappedData(int lengthInBytes, long int minValue, lo
     return CanUtility::mapInterval(data, 0, possibilitiesDataCanHold, minValue, maxValue);
 }
 
-void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
-    m_message.data[INDEX_ERROR_CODE] = errorMessage;
+uint32_t CanMessageHandler::getMessageId() {
+    return m_message.id;
 }
 
 CanMsg CanMessageHandler::getMessage() {
     return m_message;
 }
 
-uint8_t CanMessageHandler::getError() {
+uint8_t CanMessageHandler::getErrorMessage() {
     return m_message.data[INDEX_ERROR_CODE];
 }
+
+void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
+    m_message.data[INDEX_ERROR_CODE] = errorMessage;
+}
+
 

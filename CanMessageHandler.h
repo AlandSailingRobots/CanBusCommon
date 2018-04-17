@@ -74,11 +74,12 @@ public:
     double getMappedData(int lengthInBytes, long int minValue, long int maxValue);
 
     /**
-     * Inserts a value used as a error message.
-     * Intended to be used with the error definitions in canbus_error_defs.h
-     * @param errorMessage A value between 0 - 255
+     * Returns this messages ID
+     * That ID SHOULD exist in canbus_id_defs.h
+     *
+     * @return message ID
      */
-    void setErrorMessage(uint8_t errorMessage);
+    uint32_t getMessageId();
 
     /**
      * Retrieves the constructed CanMsg from handler
@@ -90,7 +91,14 @@ public:
      * Get an value between 0 - 255 used as an error message
      * @return the inserted error message from CanMsg
      */
-    uint8_t getError();
+    uint8_t getErrorMessage();
+
+    /**
+     * Inserts a value used as a error message.
+     * Intended to be used with the error definitions in canbus_error_defs.h
+     * @param errorMessage A value between 0 - 255
+     */
+    void setErrorMessage(uint8_t errorMessage);
 
     /**
      * Encodes a clean positive integer value into canMsg.
