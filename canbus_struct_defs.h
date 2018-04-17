@@ -19,8 +19,8 @@ struct CanMsg
     uint8_t data[8];
 };
 
-/*
-struct N2kMsg
+
+struct N2kMsgArd
 {
     uint32_t PGN;
     uint8_t Priority;
@@ -29,7 +29,7 @@ struct N2kMsg
     int DataLen;
     uint8_t Data[223];
 };
-*/
+
 
 
 #endif //SAILINGROBOT_CANBUS_STRUCT_DEFS_H
