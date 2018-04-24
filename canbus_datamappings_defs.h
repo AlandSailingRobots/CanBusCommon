@@ -68,4 +68,9 @@ const int WINDVANE_SELFSTEERING_ON_DATASIZE = 1;
 
 
 
+// Used by Radio Controller Status message
+const int RADIOCONTROLLER_ON_DATASIZE = 1;
+//-----------------------------------------------------------
+
+
 #endif //SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
