@@ -21,7 +21,7 @@
 #include <stdint.h>
 
 #include "CanUtility.h"
-#include "canbus_struct_defs.h"
+#include "canbus_defs.h"
 
 class CanMessageHandler {
 private:
