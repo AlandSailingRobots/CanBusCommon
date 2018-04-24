@@ -15,8 +15,6 @@
 *
 ***************************************************************************************/
 
-
-#include "canbus_error_defs.h"
 #include "CanMessageHandler.h"
 
 CanMessageHandler::CanMessageHandler(CanMsg message) : m_message(message){
