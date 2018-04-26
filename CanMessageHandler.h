@@ -25,6 +25,8 @@
 
 class CanMessageHandler {
 private:
+    const int DATA_NOT_VALID = 0;
+
     const int MAX_DATA_INDEX = 6;
     const int INDEX_ERROR_CODE = 7;
 
@@ -52,26 +54,7 @@ public:
      */
     explicit CanMessageHandler(CanMsg message);
 
-    /**
-     * Function to retrieve data from the CanMsg.
-     * Class contains a internal index counter so there is no need to keep track of index positions
-     *
-     * @param lengthInBytes the number of bytes you want to retrieve
-     * @return the value of the bytes accessed.
-     */
-    unsigned long int getData(int lengthInBytes);
 
-    /**
-     * Function to retrieve data from CanMsg and interpret
-     * them to the value they had before they were inserted into CanMsg.
-     *
-     *
-     * @param lengthInBytes the number of bytes you want to retrieve
-     * @param minValue The lower part of the interval you want to interpret data to
-     * @param maxValue The higher part of the interval you want to interpret data to
-     * @return the decoded value
-     */
-    double getMappedData(int lengthInBytes, long int minValue, long int maxValue);
 
     /**
      * Returns this messages ID
@@ -99,6 +82,69 @@ public:
      * @param errorMessage A value between 0 - 255
      */
     void setErrorMessage(uint8_t errorMessage);
+
+
+
+/*
+
+    bool getData(unsigned long int* dataToSet, int lengthInBytes);
+
+
+    bool getMappedData(double* dataToSet, int lengthInBytes, long int minValue, long int maxValue);
+ */
+
+
+
+
+    /**
+     * Function to retrieve data from the CanMsg.
+     * Class contains a internal index counter so there is no need to keep track of index positions
+     *
+     * @param lengthInBytes the number of bytes you want to retrieve
+     * @param dataToSet a pointer to the data to set
+     * @return false if data is not valid
+     */
+    template<class T>
+    bool getData(T* dataToSet, int lengthInBytes) {
+
+        T data = 0;
+        for (int i=0;i<lengthInBytes;i++) {
+            if(currentDataReadIndex > MAX_DATA_INDEX) {
+                return false;
+            }
+            data += static_cast<T>(m_message.data[currentDataReadIndex+i] << i*8);
+        }
+        currentDataReadIndex += lengthInBytes;
+
+        *dataToSet = data;
+        return data != DATA_NOT_VALID;
+    }
+
+    /**
+     * Function to retrieve data from CanMsg and interpret
+     * them to the value they had before they were inserted into CanMsg.
+     *
+     *
+     * @param lengthInBytes the number of bytes you want to retrieve
+     * @param minValue The lower part of the interval you want to interpret data to
+     * @param maxValue The higher part of the interval you want to interpret data to
+     * @return the decoded value
+     */
+    template<class T>
+    bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
+// TODO CHECK DATATYPES
+        uint64_t data;
+        bool success = getData(&data, lengthInBytes);
+
+        auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
+        *dataToSet = static_cast<T>(CanUtility::mapInterval(data, 1, possibilitiesDataCanHold, minValue, maxValue));
+        return success;
+    }
+
+
+
+
+
 
     /**
      * Encodes a clean positive integer value into canMsg.
@@ -144,9 +190,15 @@ public:
      */
     template<class T>
     bool encodeMappedMessage(int lengthInBytes, T data, long int minValue, long int maxValue) {
+
+        if(data > maxValue || data < minValue) {
+            //TODO
+        }
+
+
         auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
         auto mappedData = static_cast<uint64_t>(
-                CanUtility::mapInterval(data, minValue, maxValue, 0, possibilitiesDataCanHold));
+                CanUtility::mapInterval(data, minValue, maxValue, 1, possibilitiesDataCanHold));
 
         encodeMessage(lengthInBytes, mappedData);
         return true;

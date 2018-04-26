@@ -25,7 +25,7 @@ CanMessageHandler::CanMessageHandler(CanMsg message) : m_message(message){
 CanMessageHandler::CanMessageHandler(uint32_t messageId) {
     m_message.id = messageId;
     m_message.header.ide = 0;
-    m_message.header.length = 7;
+    m_message.header.length = 8;
     for(auto& byteData : m_message.data) {
         byteData = 0;
     }
@@ -33,25 +33,7 @@ CanMessageHandler::CanMessageHandler(uint32_t messageId) {
     m_message.data[INDEX_ERROR_CODE] = NO_ERRORS;
 }
 
-unsigned long int CanMessageHandler::getData(int lengthInBytes) {
 
-    unsigned long int data = 0;
-    for (int i=0;i<lengthInBytes;i++) {
-        if(currentDataReadIndex > MAX_DATA_INDEX) {
-            return 0;
-        }
-        data += static_cast<unsigned long int>(m_message.data[currentDataReadIndex+i] << i*8);
-    }
-    currentDataReadIndex += lengthInBytes;
-    return data;
-}
-
-double CanMessageHandler::getMappedData(int lengthInBytes, long int minValue, long int maxValue) {
-
-    unsigned long int data = getData(lengthInBytes);
-    auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
-    return CanUtility::mapInterval(data, 0, possibilitiesDataCanHold, minValue, maxValue);
-}
 
 uint32_t CanMessageHandler::getMessageId() {
     return m_message.id;
