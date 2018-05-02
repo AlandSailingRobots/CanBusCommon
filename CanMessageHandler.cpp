@@ -46,7 +46,9 @@ uint8_t CanMessageHandler::getErrorMessage() {
 }
 
 void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
-    m_message.data[INDEX_ERROR_CODE] = errorMessage;
+    if(m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) {
+        m_message.data[INDEX_ERROR_CODE] = errorMessage;
+    }
 }
 
 
