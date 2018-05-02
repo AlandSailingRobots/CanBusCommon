@@ -122,7 +122,7 @@ public:
      */
     template<class T>
     bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
-        uint64_t data;
+        uint32_t data;
         bool success = getData(&data, lengthInBytes);
 
         if(success) {
