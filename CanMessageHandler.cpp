@@ -33,8 +33,6 @@ CanMessageHandler::CanMessageHandler(uint32_t messageId) {
     m_message.data[INDEX_ERROR_CODE] = NO_ERRORS;
 }
 
-
-
 uint32_t CanMessageHandler::getMessageId() {
     return m_message.id;
 }

@@ -26,6 +26,7 @@
 class CanMessageHandler {
 private:
     const int DATA_NOT_VALID = 0;
+    const int MAPPING_INTERVAL_START = 1;
 
     const int MAX_DATA_INDEX = 6;
     const int INDEX_ERROR_CODE = 7;
@@ -85,39 +86,27 @@ public:
 
 
 
-/*
-
-    bool getData(unsigned long int* dataToSet, int lengthInBytes);
-
-
-    bool getMappedData(double* dataToSet, int lengthInBytes, long int minValue, long int maxValue);
- */
-
-
-
-
     /**
      * Function to retrieve data from the CanMsg.
      * Class contains a internal index counter so there is no need to keep track of index positions
      *
      * @param lengthInBytes the number of bytes you want to retrieve
      * @param dataToSet a pointer to the data to set
-     * @return false if data is not valid
+     * @return false if data is not valid or exceeding the index bounds
      */
     template<class T>
     bool getData(T* dataToSet, int lengthInBytes) {
+        *dataToSet = 0;
+        if(currentDataReadIndex+lengthInBytes > MAX_DATA_INDEX) {
+            return false;
+        }
 
-        T data = 0;
         for (int i=0;i<lengthInBytes;i++) {
-            if(currentDataReadIndex > MAX_DATA_INDEX) {
-                return false;
-            }
-            data += static_cast<T>(m_message.data[currentDataReadIndex+i] << i*8);
+            *dataToSet += static_cast<T>(m_message.data[currentDataReadIndex+i] << i*8);
         }
         currentDataReadIndex += lengthInBytes;
 
-        *dataToSet = data;
-        return data != DATA_NOT_VALID;
+        return *dataToSet != DATA_NOT_VALID;
     }
 
     /**
@@ -125,20 +114,26 @@ public:
      * them to the value they had before they were inserted into CanMsg.
      *
      *
+     * @param dataToSet a pointer to the data to set
      * @param lengthInBytes the number of bytes you want to retrieve
      * @param minValue The lower part of the interval you want to interpret data to
      * @param maxValue The higher part of the interval you want to interpret data to
-     * @return the decoded value
+     * @return false if data is not valid
      */
     template<class T>
     bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
-// TODO CHECK DATATYPES
         uint64_t data;
         bool success = getData(&data, lengthInBytes);
 
-        auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
-        *dataToSet = static_cast<T>(CanUtility::mapInterval(data, 1, possibilitiesDataCanHold, minValue, maxValue));
-        return success;
+        if(success) {
+            auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
+            *dataToSet = static_cast<T>(CanUtility::mapInterval(data, MAPPING_INTERVAL_START, possibilitiesDataCanHold, minValue, maxValue));
+            return true;
+        }
+        else {
+            *dataToSet = static_cast<T>(DATA_NOT_VALID);
+            return false;
+        }
     }
 
 
@@ -160,13 +155,14 @@ public:
      */
     template<class T>
     bool encodeMessage(int lengthInBytes, T data) {
+
+        if(currentDataWriteIndex+lengthInBytes > MAX_DATA_INDEX) {
+            setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
+            return false;
+        }
+
         for(int i=0;i<lengthInBytes;i++) {
             int dataIndex = currentDataWriteIndex+i;
-
-            if(dataIndex > MAX_DATA_INDEX) {
-                currentDataWriteIndex = dataIndex;
-                return false;
-            }
             m_message.data[dataIndex] = (data >> 8*i) &0xff;
         }
         currentDataWriteIndex += lengthInBytes;
@@ -192,16 +188,15 @@ public:
     bool encodeMappedMessage(int lengthInBytes, T data, long int minValue, long int maxValue) {
 
         if(data > maxValue || data < minValue) {
-            //TODO
+            setErrorMessage(ERROR_CANMSG_DATA_OUT_OF_INTERVAL);
+            return false;
         }
-
 
         auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
         auto mappedData = static_cast<uint64_t>(
-                CanUtility::mapInterval(data, minValue, maxValue, 1, possibilitiesDataCanHold));
+                CanUtility::mapInterval(data, minValue, maxValue, MAPPING_INTERVAL_START, possibilitiesDataCanHold));
 
-        encodeMessage(lengthInBytes, mappedData);
-        return true;
+        return encodeMessage(lengthInBytes, mappedData);
     }
 };
 
