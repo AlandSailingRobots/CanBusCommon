@@ -106,13 +106,19 @@ public:
         }
         currentDataReadIndex += lengthInBytes;
 
-        return *dataToSet != DATA_NOT_VALID;
+        return *dataToSet != static_cast<T>(DATA_NOT_VALID);
     }
 
     /**
      * Function to retrieve data from CanMsg and interpret
      * them to the value they had before they were inserted into CanMsg.
      *
+     * NOTE:
+     *       Due to casting back and forth floating numbers this method should not be used if you want
+     *       a precise integer number. In that case use the standard getData method
+     *
+     * IMPORTANT NOTE:
+     *       This method cannot handle data larger than 4 bytes due to the uint32_t type below
      *
      * @param dataToSet a pointer to the data to set
      * @param lengthInBytes the number of bytes you want to retrieve
@@ -173,6 +179,9 @@ public:
      * Encodes a value into canMsg, mapped onto the range given and the bytes available.
      * Note: A bigger range of data this leads to less precision
      *       A smaller amount of length leads to less precision
+     *
+     *       Due to casting back and forth floating numbers this method should not be used if you want
+     *       a precise integer number. In that case use the standard encode method
      *
      * Class contains an data index counter which is incremented after every insert
      * so no need of keeping track of index
