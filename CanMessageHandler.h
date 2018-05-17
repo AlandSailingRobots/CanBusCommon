@@ -1,19 +1,19 @@
 /****************************************************************************************
-*
-* File:
-* 		CanMessageHandler.h
-*
-* Purpose:
-*		 The purpose of this class is a unified use of CanMsg handling
+ *
+ * File:
+ * 		CanMessageHandler.h
+ *
+ * Purpose:
+ *		 The purpose of this class is a unified use of CanMsg handling
  *		 from both Arduino and RPI
  *
  *		 NOTE:
  *		 There is only 7 bytes of data that can be encoded by using this class,
  *		 because the last byte of the CanMsg is reserved for an error message.
-*
-* Developer Notes:
-*
-***************************************************************************************/
+ *
+ * Developer Notes:
+ *
+ ***************************************************************************************/
 
 #ifndef SAILINGROBOT_CANMESSAGEHANDLER_H
 #define SAILINGROBOT_CANMESSAGEHANDLER_H
@@ -24,7 +24,7 @@
 #include "canbus_defs.h"
 
 class CanMessageHandler {
-private:
+   private:
     const int MAX_DATA_INDEX = 6;
     const int INDEX_ERROR_CODE = 7;
 
@@ -32,8 +32,8 @@ private:
     int currentDataReadIndex = 0;
 
     CanMsg m_message;
-public:
 
+   public:
     /**
      * Class constructor
      *
@@ -112,16 +112,16 @@ public:
      * @param data The data that needs to be encoded into the CanMsg
      * @return false if there is no more room in CanMsg
      */
-    template<class T>
+    template <class T>
     bool encodeMessage(int lengthInBytes, T data) {
-        for(int i=0;i<lengthInBytes;i++) {
-            int dataIndex = currentDataWriteIndex+i;
+        for (int i = 0; i < lengthInBytes; i++) {
+            int dataIndex = currentDataWriteIndex + i;
 
-            if(dataIndex > MAX_DATA_INDEX) {
+            if (dataIndex > MAX_DATA_INDEX) {
                 currentDataWriteIndex = dataIndex;
                 return false;
             }
-            m_message.data[dataIndex] = (data >> 8*i) &0xff;
+            m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
         }
         currentDataWriteIndex += lengthInBytes;
         return true;
@@ -142,16 +142,15 @@ public:
      * @param maxValue The higher part of the interval you want to encode data to
      * @return
      */
-    template<class T>
+    template <class T>
     bool encodeMappedMessage(int lengthInBytes, T data, long int minValue, long int maxValue) {
-        auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes)-1;
+        auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
         auto mappedData = static_cast<uint64_t>(
-                CanUtility::mapInterval(data, minValue, maxValue, 0, possibilitiesDataCanHold));
+            CanUtility::mapInterval(data, minValue, maxValue, 0, possibilitiesDataCanHold));
 
         encodeMessage(lengthInBytes, mappedData);
         return true;
     }
 };
 
-
-#endif //SAILINGROBOT_CANMESSAGEHANDLER_H
+#endif  // SAILINGROBOT_CANMESSAGEHANDLER_H
