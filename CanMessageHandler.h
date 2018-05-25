@@ -22,9 +22,6 @@
 
 #include "CanUtility.h"
 #include "canbus_defs.h"
-//#include <iostream>
-#include "MsgParsing.h"
-#include <SPI.h>
 
 class CanMessageHandler {
 private:
@@ -199,8 +196,8 @@ public:
    * @return false if there is no more room in CanMsg
    */
   template <class T> bool encodeMessage(int lengthInBytes, T data) {
-  Serial.print("Max Data Index: ");
-  Serial.println(MAX_DATA_INDEX);
+ // Serial.print("Max Data Index: ");
+ // Serial.println(MAX_DATA_INDEX);
     if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
       setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
   //currentDataWriteIndex += lengthInBytes;
