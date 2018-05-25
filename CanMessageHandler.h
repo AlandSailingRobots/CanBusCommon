@@ -22,6 +22,9 @@
 
 #include "CanUtility.h"
 #include "canbus_defs.h"
+//#include <iostream>
+#include "MsgParsing.h"
+#include <SPI.h>
 
 class CanMessageHandler {
 private:
@@ -93,15 +96,51 @@ public:
    */
   template <class T> bool getData(T *dataToSet, int lengthInBytes) {
     *dataToSet = 0;
-    if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX) {
+  unsigned long tmp_data_holder = 0;
+  /*Serial.print("*dataToSet value on getData() start: ");
+  Serial.println(*dataToSet);
+  Serial.print("Current Data Read Index: ");
+  Serial.println(currentDataReadIndex);
+  Serial.print("Current Length In Bytes: ");
+  Serial.println(lengthInBytes);*/
+    if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
+  //Serial.println("getData entering error condition");
       return false;
     }
 
     for (int i = 0; i < lengthInBytes; i++) {
-      *dataToSet +=
-          static_cast<T>(m_message.data[currentDataReadIndex + i] << i * 8);
+ /* Serial.print("m_message.data[currentDataReadIndex + i] no cast (uint8t default): ");
+  Serial.println(m_message.data[currentDataReadIndex + i]);
+  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) no cast (random?): ");
+  Serial.println(m_message.data[currentDataReadIndex + i] << (i * 8));
+  Serial.print("m_message.data[currentDataReadIndex + i] cast (uint32): ");
+  Serial.println((uint32_t)m_message.data[currentDataReadIndex + i]);
+  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) cast (uint32): ");
+  Serial.println((uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8));
+  Serial.print("(m_message.data[currentDataReadIndex + i] << (i * 8)) cast (uint32): ");
+  Serial.println((uint32_t)(m_message.data[currentDataReadIndex + i] << (i * 8)));
+  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) static_cast<uint32>: ");
+  Serial.println(static_cast<uint32_t>(m_message.data[currentDataReadIndex + i] << (i * 8)));
+*/
+  tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
+/*  Serial.print("tmp_data_holder value: ");
+  Serial.println(tmp_data_holder);*/
+  *dataToSet += (T)(tmp_data_holder);
+   //   *dataToSet +=
+   //       static_cast<T>(m_message.data[currentDataReadIndex + i] << (i * 8));
+  //Serial.print("Reading Following Data Byte: ");
+  //Serial.print((long)m_message.data[currentDataReadIndex + i]);
+  //Serial.print(" --> m_message.data[dataIndex] << i*8 = ");
+  //Serial.println((long)m_message.data[currentDataReadIndex + i] << (i * 8));
+  //Serial.print("Current Data Read Index + i");
+  //Serial.print(currentDataReadIndex+i);
+  //Serial.print(" --- *dataToSet value at this moment: ");
+  //Serial.println(*dataToSet);
     }
     currentDataReadIndex += lengthInBytes;
+
+  //Serial.print("Result, *dataToSet = ");
+  //Serial.println(*dataToSet);
 
     return *dataToSet != static_cast<T>(DATA_NOT_VALID);
   }
@@ -130,6 +169,7 @@ public:
   template <class T>
   bool getMappedData(T *dataToSet, int lengthInBytes, long int minValue,
                      long int maxValue) {
+ // *dataToSet=0;
     uint32_t data;
     bool success = getData(&data, lengthInBytes);
 
@@ -159,15 +199,26 @@ public:
    * @return false if there is no more room in CanMsg
    */
   template <class T> bool encodeMessage(int lengthInBytes, T data) {
-
-    if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX) {
+  Serial.print("Max Data Index: ");
+  Serial.println(MAX_DATA_INDEX);
+    if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
       setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
+  //currentDataWriteIndex += lengthInBytes;
       return false;
     }
 
     for (int i = 0; i < lengthInBytes; i++) {
       int dataIndex = currentDataWriteIndex + i;
       m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
+ /* Serial.print("Writing Following Data Byte: ");
+  Serial.print((long)(data >> 8 * i) & 0xff);
+  Serial.print(" --> m_message.data[dataIndex] >> 8*i & 0xff = ");
+  Serial.println(m_message.data[dataIndex]);
+  Serial.print("Full Bytes Data: ");
+  Serial.print((long)data);
+  Serial.print(" <--long||origin--> ");
+  Serial.println("(casted uint64_t)"); //(uint64_t)data, data is cast to uint64_t in any case in below function*/
+  
     }
     currentDataWriteIndex += lengthInBytes;
     return true;
@@ -195,15 +246,28 @@ public:
   template <class T>
   bool encodeMappedMessage(int lengthInBytes, T data, long int minValue,
                            long int maxValue) {
-
+  //Serial.println("encodeMappedMessage called");
+  //std::cout << "encodeMappedMessage called";
+ /* Serial.print("Current Data Write Index: ");
+  Serial.println(currentDataWriteIndex);
+  Serial.print("Current Length In Bytes: ");
+  Serial.println(lengthInBytes);
+  Serial.print("Data to write: ");
+  Serial.print(data);
+  Serial.print(" ------- ");
+  Serial.println((float)data);*/
     if (data > maxValue || data < minValue) {
       setErrorMessage(ERROR_CANMSG_DATA_OUT_OF_INTERVAL);
+  //currentDataWriteIndex += lengthInBytes;
+  //Serial.println("Arduino call encode:encodemappedmessage fail");
+  //std::cout << "Arduino call encode:encodemappedmessage fail";
       return false;
     }
 
     auto possibilitiesDataCanHold =
-        CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
-    auto mappedData = static_cast<uint64_t>(CanUtility::mapInterval(
+        CanUtility::calcSizeOfBytes(lengthInBytes) - 1; 
+    //uint_64 cast before
+    auto mappedData = static_cast<uint32_t>(CanUtility::mapInterval(
         data, minValue, maxValue, MAPPING_INTERVAL_START,
         possibilitiesDataCanHold));
 
