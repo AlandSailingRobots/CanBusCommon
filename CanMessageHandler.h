@@ -272,4 +272,30 @@ public:
   }
 };
 
+
+  /**
+   * Encodes current sensors message (might be used for all sensors after mods).
+   * The structure of bytes is:
+   * TO DO
+   *
+   * @tparam T The data type used, must be a positive integer value.
+   * @param lengthInBytes The number of bytes this data requires
+   * @param data The data that needs to be encoded into the CanMsg
+   * @return false if there is no more room in CanMsg
+   */
+  template <class T> bool encodeCSMessage(int lengthInBytes, T data) {
+
+    if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
+      setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
+      return false;
+    }
+
+    for (int i = 0; i < lengthInBytes; i++) {
+      int dataIndex = currentDataWriteIndex + i;
+      m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
+    }
+    currentDataWriteIndex += lengthInBytes;
+    return true;
+  }
+
 #endif // SAILINGROBOT_CANMESSAGEHANDLER_H
