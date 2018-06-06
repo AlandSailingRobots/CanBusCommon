@@ -22,6 +22,7 @@
 
 #include "CanUtility.h"
 #include "canbus_defs.h"
+#include "Math/Float16Compressor.h"
 
 class CanMessageHandler {
 private:
@@ -94,50 +95,18 @@ public:
   template <class T> bool getData(T *dataToSet, int lengthInBytes) {
     *dataToSet = 0;
   unsigned long tmp_data_holder = 0;
-  /*Serial.print("*dataToSet value on getData() start: ");
-  Serial.println(*dataToSet);
-  Serial.print("Current Data Read Index: ");
-  Serial.println(currentDataReadIndex);
-  Serial.print("Current Length In Bytes: ");
-  Serial.println(lengthInBytes);*/
+
     if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
   //Serial.println("getData entering error condition");
       return false;
     }
 
     for (int i = 0; i < lengthInBytes; i++) {
- /* Serial.print("m_message.data[currentDataReadIndex + i] no cast (uint8t default): ");
-  Serial.println(m_message.data[currentDataReadIndex + i]);
-  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) no cast (random?): ");
-  Serial.println(m_message.data[currentDataReadIndex + i] << (i * 8));
-  Serial.print("m_message.data[currentDataReadIndex + i] cast (uint32): ");
-  Serial.println((uint32_t)m_message.data[currentDataReadIndex + i]);
-  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) cast (uint32): ");
-  Serial.println((uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8));
-  Serial.print("(m_message.data[currentDataReadIndex + i] << (i * 8)) cast (uint32): ");
-  Serial.println((uint32_t)(m_message.data[currentDataReadIndex + i] << (i * 8)));
-  Serial.print("m_message.data[currentDataReadIndex + i] << (i * 8) static_cast<uint32>: ");
-  Serial.println(static_cast<uint32_t>(m_message.data[currentDataReadIndex + i] << (i * 8)));
-*/
-  tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
-/*  Serial.print("tmp_data_holder value: ");
-  Serial.println(tmp_data_holder);*/
-  *dataToSet += (T)(tmp_data_holder);
-   //   *dataToSet +=
-   //       static_cast<T>(m_message.data[currentDataReadIndex + i] << (i * 8));
-  //Serial.print("Reading Following Data Byte: ");
-  //Serial.print((long)m_message.data[currentDataReadIndex + i]);
-  //Serial.print(" --> m_message.data[dataIndex] << i*8 = ");
-  //Serial.println((long)m_message.data[currentDataReadIndex + i] << (i * 8));
-  //Serial.print("Current Data Read Index + i");
-  //Serial.print(currentDataReadIndex+i);
-  //Serial.print(" --- *dataToSet value at this moment: ");
-  //Serial.println(*dataToSet);
+      tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
+      *dataToSet += (T)(tmp_data_holder);
+
     }
     currentDataReadIndex += lengthInBytes;
-
-  //Serial.print("Result, *dataToSet = ");
-  //Serial.println(*dataToSet);
 
     return *dataToSet != static_cast<T>(DATA_NOT_VALID);
   }
@@ -283,19 +252,29 @@ public:
    * @param data The data that needs to be encoded into the CanMsg
    * @return false if there is no more room in CanMsg
    */
-  template <class T> bool encodeCSMessage(int lengthInBytes, T data) {
+   bool encodeCSMessage(int lengthInBytes, float data, uint8_t position); //See cpp file for comments
 
-    if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
-      setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
+  /**
+   * Function to retrieve data from the current sensors CanMsg.
+   *
+   * @param lengthInBytes the number of bytes you want to retrieve
+   * @param dataToSet a pointer to the data to set
+   * @return false if data is not valid or exceeding the index bounds
+   */
+  bool getCSData(float *dataToSet, int lengthInBytes) {
+    *dataToSet = 0;
+    unsigned long tmp_data_holder = 0;
+    if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
+  //Serial.println("getData entering error condition");
       return false;
     }
-
     for (int i = 0; i < lengthInBytes; i++) {
-      int dataIndex = currentDataWriteIndex + i;
-      m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
+      tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
+      *dataToSet += (T)(tmp_data_holder);
     }
-    currentDataWriteIndex += lengthInBytes;
-    return true;
+    currentDataReadIndex += lengthInBytes;
+
+    return *dataToSet != static_cast<T>(DATA_NOT_VALID);
   }
 
 #endif // SAILINGROBOT_CANMESSAGEHANDLER_H
