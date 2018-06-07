@@ -176,15 +176,6 @@ public:
     for (int i = 0; i < lengthInBytes; i++) {
       int dataIndex = currentDataWriteIndex + i;
       m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
- /* Serial.print("Writing Following Data Byte: ");
-  Serial.print((long)(data >> 8 * i) & 0xff);
-  Serial.print(" --> m_message.data[dataIndex] >> 8*i & 0xff = ");
-  Serial.println(m_message.data[dataIndex]);
-  Serial.print("Full Bytes Data: ");
-  Serial.print((long)data);
-  Serial.print(" <--long||origin--> ");
-  Serial.println("(casted uint64_t)"); //(uint64_t)data, data is cast to uint64_t in any case in below function*/
-  
     }
     currentDataWriteIndex += lengthInBytes;
     return true;
@@ -212,21 +203,8 @@ public:
   template <class T>
   bool encodeMappedMessage(int lengthInBytes, T data, long int minValue,
                            long int maxValue) {
-  //Serial.println("encodeMappedMessage called");
-  //std::cout << "encodeMappedMessage called";
- /* Serial.print("Current Data Write Index: ");
-  Serial.println(currentDataWriteIndex);
-  Serial.print("Current Length In Bytes: ");
-  Serial.println(lengthInBytes);
-  Serial.print("Data to write: ");
-  Serial.print(data);
-  Serial.print(" ------- ");
-  Serial.println((float)data);*/
     if (data > maxValue || data < minValue) {
       setErrorMessage(ERROR_CANMSG_DATA_OUT_OF_INTERVAL);
-  //currentDataWriteIndex += lengthInBytes;
-  //Serial.println("Arduino call encode:encodemappedmessage fail");
-  //std::cout << "Arduino call encode:encodemappedmessage fail";
       return false;
     }
 
@@ -239,7 +217,7 @@ public:
 
     return encodeMessage(lengthInBytes, mappedData);
   }
-};
+
 
 
   /**
@@ -252,7 +230,7 @@ public:
    * @param data The data that needs to be encoded into the CanMsg
    * @return false if there is no more room in CanMsg
    */
-   bool encodeCSMessage(int lengthInBytes, float data, uint8_t position); //See cpp file for comments
+  //bool encodeCSMessage(int lengthInBytes, float data, uint8_t position); //See cpp file for comments
 
   /**
    * Function to retrieve data from the current sensors CanMsg.
@@ -261,20 +239,8 @@ public:
    * @param dataToSet a pointer to the data to set
    * @return false if data is not valid or exceeding the index bounds
    */
-  bool getCSData(float *dataToSet, int lengthInBytes) {
-    *dataToSet = 0;
-    unsigned long tmp_data_holder = 0;
-    if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
-  //Serial.println("getData entering error condition");
-      return false;
-    }
-    for (int i = 0; i < lengthInBytes; i++) {
-      tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
-      *dataToSet += (T)(tmp_data_holder);
-    }
-    currentDataReadIndex += lengthInBytes;
+  //bool getCSData(float *dataToSet, int lengthInBytes) ;
 
-    return *dataToSet != static_cast<T>(DATA_NOT_VALID);
-  }
+};
 
 #endif // SAILINGROBOT_CANMESSAGEHANDLER_H

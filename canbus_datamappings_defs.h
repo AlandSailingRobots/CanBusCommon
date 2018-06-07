@@ -65,4 +65,12 @@ const int WINDVANE_SELFSTEERING_ON_DATASIZE = 1;
 const int RADIOCONTROLLER_ON_DATASIZE = 1;
 //-----------------------------------------------------------
 
+// Used by Current Sensor message
+const int CURRENT_SENSOR_CURRENT_DATASIZE = 2;
+
+const int CURRENT_SENSOR_VOLTAGE_DATASIZE = 2;
+
+
+
+
 #endif // SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
