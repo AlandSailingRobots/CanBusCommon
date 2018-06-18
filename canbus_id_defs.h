@@ -82,4 +82,19 @@
  */
 #define MSG_ID_MARINE_SENSOR_DATA 711
 
+ /*
+ *  Contains the following information:
+ *  TO DO
+ *  DO WE NEED CURRENT SENSOR REQUEST MSG?
+ */
+#define MSG_ID_CURRENT_SENSOR_REQUEST 720
+
+/*
+ *  Contains the following information:
+ *  TO DO
+ */
+#define MSG_ID_CURRENT_SENSOR_DATA 721
+#define MSG_ID_CURRENT_SENSOR_DATA_POWER_UNIT 722
+#define MSG_ID_CURRENT_SENSOR_DATA_BOX 723
+
 #endif // SAILINGROBOT_CANBUS_ID_DEFS_H
