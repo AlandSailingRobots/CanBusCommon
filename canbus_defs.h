@@ -21,4 +21,4 @@
 #include "canbus_id_defs.h"
 #include "canbus_struct_defs.h"
 
-#endif // SAILINGROBOT_CANBUS_DEFINITIONS_H
+#endif  // SAILINGROBOT_CANBUS_DEFINITIONS_H
