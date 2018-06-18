@@ -1,16 +1,23 @@
-//
-// Created by dkarlsso on 4/16/18.
-//
+/****************************************************************************************
+ *
+ * File:
+ *    canbus_struct_defs.h
+ *
+ * Purpose:
+ *
+ * Developer Notes:
+ *    Created by dkarlsso on 2018-04-16
+ *
+ ***************************************************************************************/
 
 #ifndef SAILINGROBOT_CANBUS_STRUCT_DEFS_H
 #define SAILINGROBOT_CANBUS_STRUCT_DEFS_H
-
 #include <stdint.h>
 
 struct CanMsg {
     uint32_t id;
     struct {
-        // uint8_t rtr;		//Always zero in J1939
+        // uint8_t rtr;   // Always zero in J1939
         uint8_t ide;
         uint8_t length;
     } header;

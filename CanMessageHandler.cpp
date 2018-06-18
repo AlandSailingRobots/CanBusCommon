@@ -1,26 +1,23 @@
 /****************************************************************************************
-*
-* File:
-* 		CanMessageHandler.cpp
-*
-* Purpose:
-*		 The purpose of this class is a unified use of CanMsg handling
- *		 from both Arduino and RPI
  *
- *		 NOTE:
- *		 There is only 7 bytes of data that can be encoded by using this class,
- *		 because the last byte of the CanMsg is reserved for an error message.
-*
-* Developer Notes:
-*
-***************************************************************************************/
+ * File:
+ *    CanMessageHandler.cpp
+ *
+ * Purpose:
+ *    The purpose of this class is a unified use of CanMsg handling
+ *    from both Arduino and RPI
+ *
+ * Developer Notes:
+ *    There is only 7 bytes of data that can be encoded by using this class,
+ *    because the last byte of the CanMsg is reserved for an error message.
+ *
+ ***************************************************************************************/
 
 #include "CanMessageHandler.h"
 
 CanMessageHandler::CanMessageHandler(CanMsg message) : m_message(message){
 
 }
-
 
 CanMessageHandler::CanMessageHandler(uint32_t messageId) {
     m_message.id = messageId;
@@ -50,7 +47,6 @@ void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
         m_message.data[INDEX_ERROR_CODE] = errorMessage;
     }
 }
-
 
 /*
 bool getCSData(float *dataToSet, uint8_t targetData) {

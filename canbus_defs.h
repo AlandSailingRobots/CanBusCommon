@@ -2,11 +2,10 @@
 /****************************************************************************************
  *
  * File:
- * 		canbus_defs.h
+ *    canbus_defs.h
  *
  * Purpose:
- *		 This definition header includes all the other definition
- *headers
+ *    This definition header includes all the other definition headers
  *
  * Developer Notes:
  *

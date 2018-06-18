@@ -1,6 +1,14 @@
-//
-// Created by dkarlsso on 4/12/18.
-//
+/****************************************************************************************
+ *
+ * File:
+ *    CanUtility.h
+ *
+ * Purpose:
+ *
+ * Developer Notes:
+ *    Created by dkarlsso on 2018-04-12
+ *
+ ***************************************************************************************/
 
 #ifndef SAILINGROBOT_UTILITY_H
 #define SAILINGROBOT_UTILITY_H
