@@ -1,14 +1,15 @@
 /****************************************************************************************
  *
  * File:
- * 		canbus_id_defs.h
+ *    canbus_id_defs.h
  *
  * Purpose:
- *		 The purpose of this definitions is a unified use of ids from both Arduino and RPI
+ *    The purpose of this definitions is a unified use of ids from both Arduino
+ *    and RPI
  *
  * Developer Notes:
- *       The full specifications of these ids can be found at:
- *       https://docs.google.com/spreadsheets/d/1TQ0txUN-F_I23I8oXek--Sg3eLZSvcd2x4Pli3p4F-Q/edit?usp=sharing
+ *    The full specifications of these ids can be found at:
+ *    https://docs.google.com/spreadsheets/d/1TQ0txUN-F_I23I8oXek--Sg3eLZSvcd2x4Pli3p4F-Q/edit?usp=sharing
  *
  ***************************************************************************************/
 
@@ -80,5 +81,20 @@
  *  Error message, 1 byte at last position
  */
 #define MSG_ID_MARINE_SENSOR_DATA 711
+
+/*
+ *  Contains the following information:
+ *  TO DO
+ *  DO WE NEED CURRENT SENSOR REQUEST MSG?
+ */
+#define MSG_ID_CURRENT_SENSOR_REQUEST 720
+
+/*
+ *  Contains the following information:
+ *  TO DO
+ */
+#define MSG_ID_CURRENT_SENSOR_DATA 721
+#define MSG_ID_CURRENT_SENSOR_DATA_POWER_UNIT 722
+#define MSG_ID_CURRENT_SENSOR_DATA_BOX 723
 
 #endif  // SAILINGROBOT_CANBUS_ID_DEFS_H

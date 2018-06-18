@@ -1,6 +1,14 @@
-//
-// Created by dkarlsso on 4/12/18.
-//
+/****************************************************************************************
+ *
+ * File:
+ *    CanUtility.h
+ *
+ * Purpose:
+ *
+ * Developer Notes:
+ *    Created by dkarlsso on 2018-04-12
+ *
+ ***************************************************************************************/
 
 #ifndef SAILINGROBOT_UTILITY_H
 #define SAILINGROBOT_UTILITY_H
@@ -16,8 +24,9 @@ class CanUtility {
      * use this formula
      * (val - A)*(b-a)/(B-A) + a
      *
-     * Note: This function has to be kept identical to the corresponding Arduino-function
-     *       (also, it has no bracketing but is essentially a linear projection)
+     * Note: This function has to be kept identical to the corresponding
+     * Arduino-function (also, it has no bracketing but is essentially a linear
+     * projection)
      */
     static float mapInterval(float val, float fromMin, float fromMax, float toMin, float toMax);
 

@@ -1,11 +1,11 @@
 /****************************************************************************************
  *
  * File:
- * 		canbus_global_defs.h
+ *    canbus_global_defs.h
  *
  * Purpose:
- *		 The purpose of this definitions is a unified use of global constants
- *		 between Arduino and RPI.
+ *    The purpose of this definitions is a unified use of global constants
+ *    between Arduino and RPI.
  *
  * Developer Notes:
  *
