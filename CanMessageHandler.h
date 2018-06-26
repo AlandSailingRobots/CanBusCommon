@@ -95,7 +95,6 @@ class CanMessageHandler {
     template <class T>
     bool getData(T* dataToSet, int lengthInBytes) {
         *dataToSet = 0;
-        unsigned long tmp_data_holder = 0;
 
         if (currentDataReadIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
             // Serial.println("getData entering error condition");
@@ -103,8 +102,7 @@ class CanMessageHandler {
         }
 
         for (int i = 0; i < lengthInBytes; i++) {
-            tmp_data_holder = (uint32_t)m_message.data[currentDataReadIndex + i] << (i * 8);
-            *dataToSet += (T)(tmp_data_holder);
+            *dataToSet += static_cast<T>(m_message.data[currentDataReadIndex + i]) << (i * 8);
         }
         currentDataReadIndex += lengthInBytes;
 
@@ -134,8 +132,8 @@ class CanMessageHandler {
      */
     template <class T>
     bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
-        // *dataToSet=0;
-        uint32_t data;
+        *dataToSet = 0;
+        uint64_t data;
         bool success = getData(&data, lengthInBytes);
 
         if (success) {
@@ -204,36 +202,15 @@ class CanMessageHandler {
             setErrorMessage(ERROR_CANMSG_DATA_OUT_OF_INTERVAL);
             return false;
         }
-
+        // why "auto" when 1st function return uint and second line is casted to uint?
         auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
-        // uint_64 cast before
-        auto mappedData = static_cast<uint32_t>(CanUtility::mapInterval(
+
+        auto mappedData = static_cast<uint64_t>(CanUtility::mapInterval(
             data, minValue, maxValue, MAPPING_INTERVAL_START, possibilitiesDataCanHold));
 
         return encodeMessage(lengthInBytes, mappedData);
     }
 
-    /**
-     * Encodes current sensors message (might be used for all sensors after mods).
-     * The structure of bytes is:
-     * TO DO
-     *
-     * @tparam T The data type used, must be a positive integer value.
-     * @param lengthInBytes The number of bytes this data requires
-     * @param data The data that needs to be encoded into the CanMsg
-     * @return false if there is no more room in CanMsg
-     */
-    // bool encodeCSMessage(int lengthInBytes, float data, uint8_t position); //See cpp file for
-    // comments
-
-    /**
-     * Function to retrieve data from the current sensors CanMsg.
-     *
-     * @param lengthInBytes the number of bytes you want to retrieve
-     * @param dataToSet a pointer to the data to set
-     * @return false if data is not valid or exceeding the index bounds
-     */
-    // bool getCSData(float *dataToSet, int lengthInBytes) ;
 };
 
 #endif  // SAILINGROBOT_CANMESSAGEHANDLER_H
