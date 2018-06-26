@@ -102,7 +102,7 @@ class CanMessageHandler {
         }
 
         for (int i = 0; i < lengthInBytes; i++) {
-            *dataToSet += static_cast<T>(m_message.data[currentDataReadIndex + i]) << (i * 8);
+            *dataToSet += static_cast<T>(static_cast<uint64_t>(m_message.data[currentDataReadIndex + i]) << (i * 8));
         }
         currentDataReadIndex += lengthInBytes;
 
