@@ -1,12 +1,12 @@
 /****************************************************************************************
  *
  * File:
- * 		canbus_datamappings_defs.h
+ *    canbus_datamappings_defs.h
  *
  * Purpose:
- *		 The purpose of this definitions is a unified use reserved
- *datasize per data packet and a common interval for each data between Arduino
- *and RPI.
+ *    The purpose of this definitions is a unified use reserved
+ *    datasize per data packet and a common interval for each data between Arduino
+ *    and RPI.
  *
  * Developer Notes:
  *

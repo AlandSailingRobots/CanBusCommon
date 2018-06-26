@@ -1,15 +1,15 @@
 /****************************************************************************************
  *
  * File:
- * 		canbus_id_defs.h
+ *    canbus_id_defs.h
  *
  * Purpose:
- *		 The purpose of this definitions is a unified use of ids from both
- *Arduino and RPI
+ *    The purpose of this definitions is a unified use of ids from both Arduino
+ *    and RPI
  *
  * Developer Notes:
- *       The full specifications of these ids can be found at:
- *       https://docs.google.com/spreadsheets/d/1TQ0txUN-F_I23I8oXek--Sg3eLZSvcd2x4Pli3p4F-Q/edit?usp=sharing
+ *    The full specifications of these ids can be found at:
+ *    https://docs.google.com/spreadsheets/d/1TQ0txUN-F_I23I8oXek--Sg3eLZSvcd2x4Pli3p4F-Q/edit?usp=sharing
  *
  ***************************************************************************************/
 
