@@ -20,8 +20,8 @@
 
 #include <stdint.h>
 
+#include "Float16Compressor.h"
 #include "CanUtility.h"
-#include "Math/Float16Compressor.h"
 #include "canbus_defs.h"
 
 class CanMessageHandler {
