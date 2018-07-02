@@ -24,8 +24,18 @@
 #include "CanUtility.h"
 #include "canbus_defs.h"
 //#include <iostream>
-#include <bits/stdc++.h>
-#include "../../../SystemServices/Logger.h"
+#if (defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_NANO))
+ #define ON_ARDUINO_BOARD
+#endif
+#ifdef ON_ARDUINO_BOARD
+ #include <math.h>
+ #include <bitset>
+ #include <type_traits>
+ typedef unsigned int uint;
+#else
+ #include <bits/stdc++.h>
+ #include "../../../SystemServices/Logger.h"
+#endif
 
 class CanMessageHandler {
    private:
@@ -142,27 +152,32 @@ class CanMessageHandler {
     // WARNING: this version get the data from the bitset only
     // WARNING: use ONLY with UNSIGNED types to avoid random behavior
     template <class T> 
-    bool getData(T *dataToSet, uint start, uint length, bool varInBytes = true) { 
+    bool getData(T *dataToSet, uint start, uint length, bool varInBytes = true) {
+        #ifndef ON_ARDUINO_BOARD
         if(!std::is_unsigned<T>::value) {
-            #ifndef __AVR__
-            Logger::warning("In CanMessageHandler::getData(): Casting to SIGNED type, can lead to wrong data!");
-            #endif
+            Logger::warning("In CanMessageHandler::getData(): Casting to SIGNED type, can lead to wrong data!");   
         }
+        #endif
         if(varInBytes) { length *= 8; start  *= 8; }
 
         std::bitset<64> data_container; // init to zero
         std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
         data_container = (m_message_bitset & mask) >> start;
+        #ifndef ON_ARDUINO_BOARD
         *dataToSet = static_cast<T>(data_container.to_ullong()); // NOTE: could add an option to return a bitset or not?
+        #else
+        *dataToSet = static_cast<T>(data_container.to_ulong());  // WARNING: ArduinoStl library used have no to_ullong function,
+                                                                 //          we are limited to 4 bytes read on Arduino boards
+        #endif
 
         if (start + length > 64) { // mask will be zero in this case
-            #ifndef __AVR__
+            #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::getData(): Wrong reading parameters");
             #endif
             return false;
         }
         if(!(data_container.any())){ // In case of overflow and some other wrong operations, the returned bitset is zeros only
-            #ifndef __AVR__
+            #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::getData(): Data bits are unset, most likely a wrong operation");
             #endif
             return false;
@@ -247,11 +262,11 @@ class CanMessageHandler {
         int ERROR_CANMSG_ENCODING_OUT_OF_BOUND = 2;
         int ERROR_CANMSG_MASK_HAS_NO_BIT_SET = 3;
         int ERROR_CANMSG_OVERWRITING = 4; // more a warning than an error  */
+        #ifndef ON_ARDUINO_BOARD
         if(std::is_unsigned<T>::value) {
-            #ifndef __AVR__
             Logger::warning("In CanMessageHandler::encodeMessage(): Casting to SIGNED type, can lead to wrong data!");
-            #endif
         }
+        #endif
         if (varInBytes) { length *= 8; start *= 8; } // for simpler access using bytes
         std::bitset<64> b_data(data); // if data is a signed int, it'll get through a ulong or ullong cast
                                     // to test
@@ -261,7 +276,7 @@ class CanMessageHandler {
         b_data <<= start;
 
         if ((m_message_bitset&mask).any()) { // simple check, does not take into account that a zero could be data
-            #ifndef __AVR__
+            #ifndef ON_ARDUINO_BOARD
             Logger::warning("Warning, overwriting data in the container");
             #endif
             //setErrorMessage(ERROR_CANMSG_OVERWRITING);
@@ -270,7 +285,7 @@ class CanMessageHandler {
 
         // Set error message
         if (start > 64) {
-            #ifndef __AVR__
+            #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::encodeMessage(): start > 64 ---> overflow!");
             #endif
             //setErrorMessage(ERROR_CANMSG_ENCODING_OUT_OF_BOUND);
@@ -278,7 +293,9 @@ class CanMessageHandler {
         }
         if (!mask.any()) { // Assuming we never want an unset mask, it is a way to catch some unmatching length and start value
                            // because mask is still 0 when overflowing at constructor step
+            #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::encodeMessage(): Mask has no bits set, check LENGTH and START params.\n");
+            #endif
             //setErrorMessage(ERROR_CANMSG_MASK_HAS_NO_BIT_SET);
             return false;
         }
