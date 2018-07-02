@@ -23,6 +23,9 @@
 #include "Float16Compressor.h"
 #include "CanUtility.h"
 #include "canbus_defs.h"
+//#include <iostream>
+#include <bits/stdc++.h>
+#include "../../../SystemServices/Logger.h"
 
 class CanMessageHandler {
    private:
@@ -36,6 +39,9 @@ class CanMessageHandler {
     int currentDataReadIndex = 0;
 
     CanMsg m_message;
+    std::bitset<64> m_message_bitset;
+    // maybe delete the convert function from m_message to m_message_bitset
+    // as they can currently be filled separately
 
    public:
     /**
@@ -71,6 +77,12 @@ class CanMessageHandler {
     CanMsg getMessage();
 
     /**
+     * Retrieves the constructed CanMsg from handler
+     * @return the current CanMsg
+     */
+    std::bitset<64> getMessageInBitset(); // rename to getBitsetMessage (currently filled separately from message)
+
+    /**
      * Get an value between 0 - 255 used as an error message
      * @return the inserted error message from CanMsg
      */
@@ -81,7 +93,23 @@ class CanMessageHandler {
      * Intended to be used with the error definitions in canbus_error_defs.h
      * @param errorMessage A value between 0 - 255
      */
-    void setErrorMessage(uint8_t errorMessage);
+    bool setErrorMessage(uint8_t errorMessage);
+
+    /**
+     * Converts CanMsg.data into a bitset, hold by m_message_bitset
+     * NOTE: move this somewhere?
+     */
+    bool canMsgToBitset();
+
+    /**
+     * Converts bitset to CanMsg.data
+     */
+    bool bitsetToCanMsg();
+
+    /**
+     * Generate current sensor header: sensorID(3 bits) | rolling number(2 bits) | error(3 bits) 
+     */
+    bool generateCurrentSensorHeader(int sensorID, int rolling_number);
 
     /**
      * Function to retrieve data from the CanMsg.
@@ -92,7 +120,7 @@ class CanMessageHandler {
      * @param dataToSet a pointer to the data to set
      * @return false if data is not valid or exceeding the index bounds
      */
-    template <class T>
+    template <class T> // need to keep it for some actuators code
     bool getData(T* dataToSet, int lengthInBytes) {
         *dataToSet = 0;
         unsigned long tmp_data_holder = 0;
@@ -109,6 +137,38 @@ class CanMessageHandler {
         currentDataReadIndex += lengthInBytes;
 
         return *dataToSet != static_cast<T>(DATA_NOT_VALID);
+    }
+
+    // WARNING: this version get the data from the bitset only
+    // WARNING: use ONLY with UNSIGNED types to avoid random behavior
+    template <class T> 
+    bool getData(T *dataToSet, uint start, uint length, bool varInBytes = true) { 
+        if(!std::is_unsigned<T>::value) {
+            #ifndef __AVR__
+            Logger::warning("In CanMessageHandler::getData(): Casting to SIGNED type, can lead to wrong data!");
+            #endif
+        }
+        if(varInBytes) { length *= 8; start  *= 8; }
+
+        std::bitset<64> data_container; // init to zero
+        std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+        data_container = (m_message_bitset & mask) >> start;
+        *dataToSet = static_cast<T>(data_container.to_ullong()); // NOTE: could add an option to return a bitset or not?
+
+        if (start + length > 64) { // mask will be zero in this case
+            #ifndef __AVR__
+            Logger::error("In CanMessageHandler::getData(): Wrong reading parameters");
+            #endif
+            return false;
+        }
+        if(!(data_container.any())){ // In case of overflow and some other wrong operations, the returned bitset is zeros only
+            #ifndef __AVR__
+            Logger::error("In CanMessageHandler::getData(): Data bits are unset, most likely a wrong operation");
+            #endif
+            return false;
+        }
+
+        return true;        
     }
 
     /**
@@ -132,11 +192,11 @@ class CanMessageHandler {
      * to
      * @return false if data is not valid
      */
-    template <class T>
+    template <class T> // AVOID USING FOR THE MOMENT, NO LONGER WORKS AFTER MODS ON getData()
     bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
         // *dataToSet=0;
         uint32_t data;
-        bool success = getData(&data, lengthInBytes);
+        bool success = getData(&data, lengthInBytes); 
 
         if (success) {
             auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
@@ -176,6 +236,55 @@ class CanMessageHandler {
             m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
         }
         currentDataWriteIndex += lengthInBytes;
+        return true;
+    }
+
+    // @data MUST be an unsigned int to avoid potential random behavior
+    // NOTE: ONLY ENCODING THE BITSET at the moment
+    template <class T>
+    bool encodeMessage(T data, uint start, uint length, bool varInBytes = true) {
+            /* IMPLEMENT THIS LATER
+        int ERROR_CANMSG_ENCODING_OUT_OF_BOUND = 2;
+        int ERROR_CANMSG_MASK_HAS_NO_BIT_SET = 3;
+        int ERROR_CANMSG_OVERWRITING = 4; // more a warning than an error  */
+        if(std::is_unsigned<T>::value) {
+            #ifndef __AVR__
+            Logger::warning("In CanMessageHandler::encodeMessage(): Casting to SIGNED type, can lead to wrong data!");
+            #endif
+        }
+        if (varInBytes) { length *= 8; start *= 8; } // for simpler access using bytes
+        std::bitset<64> b_data(data); // if data is a signed int, it'll get through a ulong or ullong cast
+                                    // to test
+        std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+
+        // Shift and use mask. IMPORTANT: if length is not high enough, or start is too high, data corruption will occur here
+        b_data <<= start;
+
+        if ((m_message_bitset&mask).any()) { // simple check, does not take into account that a zero could be data
+            #ifndef __AVR__
+            Logger::warning("Warning, overwriting data in the container");
+            #endif
+            //setErrorMessage(ERROR_CANMSG_OVERWRITING);
+        }
+        b_data &= mask;
+
+        // Set error message
+        if (start > 64) {
+            #ifndef __AVR__
+            Logger::error("In CanMessageHandler::encodeMessage(): start > 64 ---> overflow!");
+            #endif
+            //setErrorMessage(ERROR_CANMSG_ENCODING_OUT_OF_BOUND);
+            return false;
+        }
+        if (!mask.any()) { // Assuming we never want an unset mask, it is a way to catch some unmatching length and start value
+                           // because mask is still 0 when overflowing at constructor step
+            Logger::error("In CanMessageHandler::encodeMessage(): Mask has no bits set, check LENGTH and START params.\n");
+            //setErrorMessage(ERROR_CANMSG_MASK_HAS_NO_BIT_SET);
+            return false;
+        }
+
+        // merging to container
+        m_message_bitset |= b_data;   
         return true;
     }
 
@@ -234,6 +343,8 @@ class CanMessageHandler {
      * @return false if data is not valid or exceeding the index bounds
      */
     // bool getCSData(float *dataToSet, int lengthInBytes) ;
+
+     bool generateHeader(int msgType) ;
 };
 
 #endif  // SAILINGROBOT_CANMESSAGEHANDLER_H

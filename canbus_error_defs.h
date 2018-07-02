@@ -36,5 +36,9 @@
 #define ERROR_CANMSG_DATA_OUT_OF_INTERVAL 13        // Can message have data out of interval. Data will be set to 0
 #define ERROR_CANMSG_INDEX_OUT_OF_INTERVAL 14       // When overstepping total index of data. Value will be set to 0
 
+#define ERROR_CANMSG_ENCODING_OUT_OF_BOUND 1002;    // Start value is too high, mask and data will be unset (=0)
+#define ERROR_CANMSG_MASK_HAS_NO_BIT_SET 1003;      // Mask value is zero, happens when start and legnth are set to wrong values
+#define ERROR_CANMSG_OVERWRITING 1004;              // More a warning than an error, we currently don't catch every overwriting situations
+
 #endif
 // clang-format on
