@@ -122,7 +122,7 @@ class CanMessageHandler {
     /**
      * Generate current sensor header: sensorID(3 bits) | rolling number(2 bits) | error(3 bits) 
      */
-    bool generateCurrentSensorHeader(int sensorID, int rolling_number);
+    bool generateCurrentSensorHeader(uint8_t sensorID, uint8_t rolling_number);
 
     /**
      * Function to retrieve data from the CanMsg.
@@ -164,13 +164,23 @@ class CanMessageHandler {
         if(varInBytes) { length *= 8; start  *= 8; }
 
         std::bitset<64> data_container; // init to zero
-        std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
-        data_container = (m_message_bitset & mask) >> start;
+        //std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+        std::bitset<64> mask((pow(2,length)-1));
+
+        if(start != 0) {  // Arduino fails to shift by zero a bitset...
+            mask <<= start;
+            data_container = (m_message_bitset & mask) >> start;
+        } else {
+            data_container = (m_message_bitset & mask);
+        }
+        
         #ifndef ON_ARDUINO_BOARD
         *dataToSet = static_cast<T>(data_container.to_ullong()); // NOTE: could add an option to return a bitset or not?
         #else
-        *dataToSet = static_cast<T>(data_container.to_ulong());  // WARNING: ArduinoStl library used have no to_ullong function,
-                                                                 //          we are limited to 4 bytes read on Arduino boards
+        // WARNING: ArduinoStl library used have no to_ullong function, we are limited to 4 bytes read on Arduino boards.
+        // NOTE   : please find a cleaner solution.
+        std::bitset<32> arduino_sized_bitset(static_cast<std::string>(data_container.to_string<char, std::string::traits_type, std::string::allocator_type>().c_str()+32));
+        *dataToSet = static_cast<T>(arduino_sized_bitset.to_ulong());  
         #endif
 
         if (start + length > 64) { // mask will be zero in this case
@@ -270,13 +280,19 @@ class CanMessageHandler {
             Logger::warning("In CanMessageHandler::encodeMessage(): Casting to SIGNED type, can lead to wrong data!");
         }
         #endif
+        // add an if check: if b_data >> max value --> overflow
         if (varInBytes) { length *= 8; start *= 8; } // for simpler access using bytes
         std::bitset<64> b_data(data); // if data is a signed int, it'll get through a ulong or ullong cast
                                     // to test
-        std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+        //std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+        std::bitset<64> mask(pow(2,length)-1);
 
-        // Shift and use mask. IMPORTANT: if length is not high enough, or start is too high, data corruption will occur here
-        b_data <<= start;
+        if(start != 0){ // again Arduino can't shift this bitset by zero...
+            mask <<= start;
+
+            // Shift and use mask. IMPORTANT: if length is not high enough, or start is too high, data corruption will occur here
+            b_data <<= start;
+        }
 
         if ((m_message_bitset&mask).any()) { // simple check, does not take into account that a zero could be data
             #ifndef ON_ARDUINO_BOARD

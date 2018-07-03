@@ -39,7 +39,7 @@ CanMsg CanMessageHandler::getMessage() {
 }
 
 std::bitset<64> CanMessageHandler::getMessageInBitset() {
-    canMsgToBitset(); // to make sure bitset is updated
+    //canMsgToBitset(); // to make sure bitset is updated
     return m_message_bitset;
 }
 
@@ -51,10 +51,10 @@ bool CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
     if(m_message.id==MSG_ID_CURRENT_SENSOR_REQUEST) {
         // error code has 3 bits in current sensor data
         if(errorMessage >= 8) {
-            #ifndef __AVR__
+            #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::setErrorMessage(): error code value > current_sensor_max_error_value. Wrong error coded.");
             #endif
-            encodeMessage(7, 7*8, 3, false); // encode error 7 to make sure an error is still coded
+            encodeMessage(7, 7*8, 3, false); // encode error 7('111') to make sure an error is still coded
             return false;
         } else {
             encodeMessage(errorMessage, 7*8, 3, false);
@@ -80,7 +80,7 @@ bool CanMessageHandler::canMsgToBitset() {
 
     if(!(m_message_bitset.any())){ // In case of overflow and some other wrong operations, the returned bitset is zeros only
         // Check if we are compiling for arduino board, so we don't use the logger on it, arduino use AVR architecture. 
-        #ifndef __AVR__
+        #ifndef ON_ARDUINO_BOARD
         Logger::error("In CanMessageHandler::canMsgToBitset(): Data bits are unset, most likely a wrong operation");
         #endif 
 
@@ -110,13 +110,13 @@ bool CanMessageHandler::bitsetToCanMsg() { // no false output at the moment
     }
 }*/
 
-bool CanMessageHandler::generateCurrentSensorHeader(int sensorID, int rolling_number) {
+bool CanMessageHandler::generateCurrentSensorHeader(uint8_t sensorID, uint8_t rolling_number) {
     // Current sensor header infos:   ID   | rol_num | error_value
     // Number of bits             :    3        2           3
     bool success = true;
     bool varInBytes = false;
     success &= encodeMessage(sensorID, 7*8 + 5, 3, varInBytes); // May define things like current_sensor_id_start_bits etc.
-    success &= encodeMessage(sensorID, 7*8 + 3, 2, varInBytes);
+    success &= encodeMessage(rolling_number, 7*8 + 3, 2, varInBytes);
     return success;
 }
 
