@@ -1,5 +1,7 @@
 # Commons Library #
 This library contains code and definitions that are used from both Arduino and Raspberry Pi
+You will need to install the ArduinoSTL library. It's pretty straightforward using the library
+manager from the Arduino IDE.
 
 ## Important Info ##
 

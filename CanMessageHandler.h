@@ -12,6 +12,9 @@
  *    class, because the last byte of the CanMsg is reserved for an error message.
  *
  * Developer Notes:
+ *    WARNING: ArduinoStl library used have no to_ullong function, we are limited to 4 bytes read (getData()) on Arduino boards.
+ *             On the Raspberry PI side there is no problem for 8 bytes read.
+ *    NEED to install ArduinoSTL, easy to do from ArduinoIDE with the library manager
  *
  ***************************************************************************************/
 
@@ -27,15 +30,15 @@
 #if (defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_NANO))
  #define ON_ARDUINO_BOARD
 #endif
-#ifdef ON_ARDUINO_BOARD
+#ifdef ON_ARDUINO_BOARD    // NEED to install ArduinoSTL, easy to do from ArduinoIDE with the library manager
  #include <math.h>
  #include <bitset>
  #include <type_traits>
- typedef unsigned int uint;
+ typedef unsigned int uint; // Arduino have no native typedef from unsigned int to uint
 #else
  #include <bits/stdc++.h>
  #include "../../../SystemServices/Logger.h"
-#endif
+#endif // ON_ARDUINO_BOARD
 
 class CanMessageHandler {
    private:
