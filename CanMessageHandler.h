@@ -167,7 +167,7 @@ class CanMessageHandler {
         //std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
         std::bitset<64> mask((pow(2,length)-1));
 
-        if(start != 0) {  // Arduino fails to shift by zero a bitset...
+        if(start > 0) {  // Arduino fails to shift by zero a bitset...
             mask <<= start;
             data_container = (m_message_bitset & mask) >> start;
         } else {
@@ -285,22 +285,23 @@ class CanMessageHandler {
         std::bitset<64> b_data(data); // if data is a signed int, it'll get through a ulong or ullong cast
                                     // to test
         //std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
-        std::bitset<64> mask(pow(2,length)-1);
+        //std::bitset<64> mask(pow(2,length)-1);
 
-        if(start != 0){ // again Arduino can't shift this bitset by zero...
-            mask <<= start;
+        if(start > 0){ // again Arduino can't shift this bitset by zero...
+            //mask <<= start;
 
-            // Shift and use mask. IMPORTANT: if length is not high enough, or start is too high, data corruption will occur here
+            // Shift and use mask(just later). IMPORTANT: if length is not high enough, or start is too high, data corruption will occur here
             b_data <<= start;
         }
-
+/*
         if ((m_message_bitset&mask).any()) { // simple check, does not take into account that a zero could be data
             #ifndef ON_ARDUINO_BOARD
             Logger::warning("Warning, overwriting data in the container");
             #endif
             //setErrorMessage(ERROR_CANMSG_OVERWRITING);
         }
-        b_data &= mask;
+*/        
+        //b_data &= mask;
 
         // Set error message
         if (start > 64) {
@@ -310,7 +311,7 @@ class CanMessageHandler {
             //setErrorMessage(ERROR_CANMSG_ENCODING_OUT_OF_BOUND);
             return false;
         }
-        if (!mask.any()) { // Assuming we never want an unset mask, it is a way to catch some unmatching length and start value
+/*        if (!mask.any()) { // Assuming we never want an unset mask, it is a way to catch some unmatching length and start value
                            // because mask is still 0 when overflowing at constructor step
             #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::encodeMessage(): Mask has no bits set, check LENGTH and START params.\n");
@@ -318,7 +319,7 @@ class CanMessageHandler {
             //setErrorMessage(ERROR_CANMSG_MASK_HAS_NO_BIT_SET);
             return false;
         }
-
+*/
         // merging to container
         m_message_bitset |= b_data;   
         return true;
