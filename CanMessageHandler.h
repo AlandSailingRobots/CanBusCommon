@@ -237,6 +237,29 @@ class CanMessageHandler {
         }
     }
 
+    // New version, limited to 32 bits if called by an arduino
+    template <class T> 
+    bool getMappedData(T* dataToSet, uint start, uint length, bool varInBytes, long int minValue, long int maxValue) {
+        #ifdef ON_ARDUINO_BOARD
+        uint32_t data;
+        #else
+        uint64_t data;
+        #endif
+        //bool success = getData(&data, lengthInBytes); 
+        bool success = getData(&data, start, length, varInBytes);
+
+        if (success) {
+            //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
+            uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
+            *dataToSet = static_cast<T>(CanUtility::mapInterval(
+                data, 0, maxValueFittingInGivenLength, minValue, maxValue));
+            return true;
+        } else {
+            *dataToSet = static_cast<T>(DATA_NOT_VALID);
+            return false;
+        }
+    }
+
     /**
      * Encodes a clean positive integer value into canMsg.
      * Note: data value MUST be within the range of the lengthInBytes parameter
@@ -359,28 +382,26 @@ class CanMessageHandler {
         return encodeMessage(lengthInBytes, mappedData);
     }
 
-    /**
-     * Encodes current sensors message (might be used for all sensors after mods).
-     * The structure of bytes is:
-     * TO DO
-     *
-     * @tparam T The data type used, must be a positive integer value.
-     * @param lengthInBytes The number of bytes this data requires
-     * @param data The data that needs to be encoded into the CanMsg
-     * @return false if there is no more room in CanMsg
-     */
-    // bool encodeCSMessage(int lengthInBytes, float data, uint8_t position); //See cpp file for
-    // comments
+    // Version using the new encodeMessage
+    // WARNING: we're limited to 4 bytes <-- casting into uint32_t (arduino boards used don't handle uint64_t)
+    template <class T>
+    bool encodeMappedMessage(T data, uint start, uint length, bool varInBytes, long int minValue, long int maxValue) {
+        if (data > maxValue || data < minValue) {
+            //setErrorMessage(ERROR_CANMSG_DATA_OUT_OF_INTERVAL);
+            return false;
+        }
 
-    /**
-     * Function to retrieve data from the current sensors CanMsg.
-     *
-     * @param lengthInBytes the number of bytes you want to retrieve
-     * @param dataToSet a pointer to the data to set
-     * @return false if data is not valid or exceeding the index bounds
-     */
-    // bool getCSData(float *dataToSet, int lengthInBytes) ;
+        //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
+        if(varInBytes) { start *= 8; length *= 8; };
+        uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
+        // uint_64 cast before
+        uint32_t mappedData = static_cast<uint32_t>(CanUtility::mapInterval(
+            data, minValue, maxValue, 0, maxValueFittingInGivenLength));
 
+        return encodeMessage(mappedData, start, length, varInBytes);
+    }
+
+   
      bool generateHeader(int msgType) ;
 };
 
