@@ -74,12 +74,11 @@ bool CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
 
 bool CanMessageHandler::canMsgToBitset() {
     m_message_bitset = 0;
-    int i = 0;
-    #ifdef ON_ARDUINO_BOARD  
-    m_message_bitset |= (static_cast<std::bitset<64>>(m_message.data[7-i]));  // Arduino crash when shifting a bitset by zero...
-    i++;                                                                   // So we do the first iteration before the loop in this case
-    #endif
-    for(i; i<8; i++){
+
+    m_message_bitset |= (static_cast<std::bitset<64>>(m_message.data[7]));  // Arduino crash when shifting a bitset by zero...
+                                                              // So we do the first iteration before the loop in this case
+
+    for(int i=1; i<8; i++){
         m_message_bitset |= (static_cast<std::bitset<64>>(m_message.data[7-i])) << i*8;
     }
 

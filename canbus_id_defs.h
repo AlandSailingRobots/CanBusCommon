@@ -91,7 +91,17 @@
 
 /*
  *  Contains the following information:
- *  TO DO
+ *  In the left byte:
+ *     -sensor ID, 3 bits (should be 4 later)
+ *     -rolling number, for status monitoring, 2 bits 
+ *     -error_flag, 3 bits
+ *  From the right:
+ *     -voltage value, 2 bytes, half precision float
+ *     -current value, 2 bytes, half precision float
+ *  NOTE:
+ *     We have enough space to insert one of both values as
+ *     single precision float if needed.
+ *  
  */
 #define MSG_ID_CURRENT_SENSOR_DATA 721
 
