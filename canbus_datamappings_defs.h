@@ -66,8 +66,21 @@ const int RADIOCONTROLLER_ON_DATASIZE = 1;
 //-----------------------------------------------------------
 
 // Used by Current Sensor message
-const int CURRENT_SENSOR_CURRENT_DATASIZE = 2;
+const int CURRENT_SENSOR_CURRENT_DATASIZE = 2; // in bytes
+const int CURRENT_SENSOR_CURRENT_START    = 2; // in bytes
+const int CURRENT_SENSOR_CURRENT_IN_BYTE  = true;
 
-const int CURRENT_SENSOR_VOLTAGE_DATASIZE = 2;
+const int CURRENT_SENSOR_VOLTAGE_DATASIZE = 2; // in bytes
+const int CURRENT_SENSOR_VOLTAGE_START    = 0; // in bytes
+const int CURRENT_SENSOR_VOLTAGE_IN_BYTE  = true;
+
+const int CURRENT_SENSOR_ID_DATASIZE      = 3;       // in bits
+const int CURRENT_SENSOR_ID_START         = 7*8 + 5; // in bits
+const int CURRENT_SENSOR_ID_IN_BYTE       = false;
+
+const int CURRENT_SENSOR_ROL_NUM_DATASIZE = 2;       // in bits
+const int CURRENT_SENSOR_ROL_NUM_START    = 7*8 + 3; // in bits
+const int CURRENT_SENSOR_ROL_NUM_IN_BYTE  = false;
+
 
 #endif  // SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
