@@ -17,7 +17,7 @@
 #ifndef SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
 #define SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
 
-#include <stdint.h>
+#include <stdint.h> // needed for the arduino for some reason
 
 
 // Used by marine sensor data message
@@ -25,23 +25,23 @@ const uint32_t SENSOR_PH_START = 0;
 const uint32_t SENSOR_PH_DATASIZE = 1;
 const bool SENSOR_PH_IN_BYTE = true;
 const int SENSOR_PH_INTERVAL_MIN = 0;
-const int SENSOR_PH_INTERVAL_MAX = 14;
+const int SENSOR_PH_INTERVAL_MAX = 255;//14;
 
     // we can encode directly the float instead of using mappedData as we
     // are using 4 bytes, and arduino float are 4 bytes
 const uint32_t SENSOR_CONDUCTIVETY_START = 1;
 const uint32_t SENSOR_CONDUCTIVETY_DATASIZE = 4;
 const bool SENSOR_CONDUCTIVETY_IN_BYTE = true;
-const int SENSOR_CONDUCTIVETY_INTERVAL_MIN = -50;
-const long int SENSOR_CONDUCTIVETY_INTERVAL_MAX = 200000;
+const int SENSOR_CONDUCTIVETY_INTERVAL_MIN = 0; //-5
+const long int SENSOR_CONDUCTIVETY_INTERVAL_MAX = 4294967295;//200000;
 
     // we can either use the mappedData functions here, are go with the
     // float16 compressor as we are using 2 bytes
 const uint32_t SENSOR_TEMPERATURE_START = 5;
 const uint32_t SENSOR_TEMPERATURE_DATASIZE = 2;
 const bool SENSOR_TEMPERATURE_IN_BYTE = true;
-const int SENSOR_TEMPERATURE_INTERVAL_MIN = -5; 
-const int SENSOR_TEMPERATURE_INTERVAL_MAX = 40;
+const int SENSOR_TEMPERATURE_INTERVAL_MIN = 0;//-5; 
+const int SENSOR_TEMPERATURE_INTERVAL_MAX = 65535;//40;
 //-----------------------------------------------------------
 
 // Used by marine sensor request message

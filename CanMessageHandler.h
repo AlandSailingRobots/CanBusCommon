@@ -250,6 +250,7 @@ class CanMessageHandler {
 
         if (success) {
             //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
+            if (varInBytes) { length *= 8; start *= 8; }
             uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
             *dataToSet = static_cast<T>(CanUtility::mapInterval(
                 data, 0, maxValueFittingInGivenLength, minValue, maxValue));
@@ -392,7 +393,9 @@ class CanMessageHandler {
         }
 
         //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
-        if(varInBytes) { start *= 8; length *= 8; };
+        if(varInBytes) { start *= 8; length *= 8; varInBytes =false; }; 
+        // NOTE: reset varInBytes to false or the call to encodeMessage will re-multiply by 8 start and length
+
         uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
         // uint_64 cast before
         uint32_t mappedData = static_cast<uint32_t>(CanUtility::mapInterval(
