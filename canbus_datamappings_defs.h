@@ -40,8 +40,8 @@ const long int SENSOR_CONDUCTIVETY_INTERVAL_MAX = 200000;
 const uint32_t SENSOR_TEMPERATURE_START = 5;
 const uint32_t SENSOR_TEMPERATURE_DATASIZE = 2;
 const bool SENSOR_TEMPERATURE_IN_BYTE = true;
-const int SENSOR_TEMPERATURE_INTERVAL_MIN = 0;//-5; 
-const int SENSOR_TEMPERATURE_INTERVAL_MAX = 65535;//40;
+const int SENSOR_TEMPERATURE_INTERVAL_MIN = -5; 
+const int SENSOR_TEMPERATURE_INTERVAL_MAX = 40;
 //-----------------------------------------------------------
 
 // Used by marine sensor request message
