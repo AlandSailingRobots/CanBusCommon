@@ -192,7 +192,8 @@ class CanMessageHandler {
         if(!(data_container.any())){ // In case of overflow and some other wrong operations, the returned bitset is zeros only,
                                      // but it can be a data in some cases.
             #ifndef ON_ARDUINO_BOARD
-            Logger::warning("In CanMessageHandler::getData(): Data bits are unset");
+            // This log appears too many times when nothing wrong is happening, commented for now
+            // Logger::warning("In CanMessageHandler::getData(): Data bits are unset");
             #endif
             return false;
         }
