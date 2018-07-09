@@ -106,7 +106,7 @@ class CanMessageHandler {
      * Intended to be used with the error definitions in canbus_error_defs.h
      * @param errorMessage A value between 0 - 255
      */
-    bool setErrorMessage(uint8_t errorMessage);
+    void setErrorMessage(uint8_t errorMessage);
 
     /**
      * Converts CanMsg.data into a bitset, hold by m_message_bitset

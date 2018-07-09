@@ -44,30 +44,54 @@ std::bitset<64> CanMessageHandler::getMessageInBitset() {
 }
 
 uint8_t CanMessageHandler::getErrorMessage() {
-    return m_message.data[INDEX_ERROR_CODE];
+    uint8_t errorMessage;
+    switch(m_message.id) {
+
+        case MSG_ID_CURRENT_SENSOR_REQUEST:
+            getData(&errorMessage, CURRENT_SENSOR_ERROR_START, 
+                     CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE);
+            break;
+
+        case MSG_ID_MARINE_SENSOR_DATA:
+            getData(&errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
+            break;
+
+        case default:
+            errorMessage = m_message.data[INDEX_ERROR_CODE];
+            break;
+
+    }
+    return errorMessage;
 }
 
-bool CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
-    if(m_message.id==MSG_ID_CURRENT_SENSOR_REQUEST) {
-        // error code has 3 bits in current sensor data
-        if(errorMessage >= 8) {
-            #ifndef ON_ARDUINO_BOARD
-            Logger::error("In CanMessageHandler::setErrorMessage(): error code value > current_sensor_max_error_value. Wrong error coded.");
-            #endif
-            encodeMessage(7, 7*8, 3, false); // encode error 7('111') to make sure an error is still coded
-            return false;
-        } else {
-            encodeMessage(errorMessage, 7*8, 3, false);
-            return true;
-        }
+void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
 
-    }
-    else if(m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) { // using if/elseif to keep the older parts of the code working 
-        m_message.data[INDEX_ERROR_CODE] = errorMessage;     // most likely used by marine sensors only, have to check that.
-        return true;
-    }
-    else {
-        return false; // no error has been set
+    switch(m_message.id) {
+
+        case MSG_ID_CURRENT_SENSOR_REQUEST:
+            if(errorMessage >= 8) {
+                #ifndef ON_ARDUINO_BOARD
+                Logger::error("In CanMessageHandler::setErrorMessage(): error code value > current_sensor_max_error_value. Wrong error coded.");
+                #endif
+                // encode error 7('111') to make sure an error is still coded
+                encodeMessage(7, CURRENT_SENSOR_ERROR_START, 
+                               CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE); 
+            } else {
+                encodeMessage(errorMessage, CURRENT_SENSOR_ERROR_START,
+                               CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE);
+            }
+            break;
+
+        case MSG_ID_MARINE_SENSOR_DATA:
+            encodeMessage(errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
+            break;
+
+        case default:  // other part of the code still use this version
+            if (m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) {
+                m_message.data[INDEX_ERROR_CODE] = errorMessage;
+            }
+            break;
+                   
     }
 
 }

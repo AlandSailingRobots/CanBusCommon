@@ -42,6 +42,10 @@ const uint32_t SENSOR_TEMPERATURE_DATASIZE = 2;
 const bool SENSOR_TEMPERATURE_IN_BYTE = true;
 const int SENSOR_TEMPERATURE_INTERVAL_MIN = -5; 
 const int SENSOR_TEMPERATURE_INTERVAL_MAX = 40;
+
+const uint32_t SENSOR_ERROR_START = 7;
+const uint32_t SENSOR_ERROR_DATASIZE = 1;
+const bool SENSOR_ERROR_IN_BYTE = true;
 //-----------------------------------------------------------
 
 // Used by marine sensor request message
@@ -96,6 +100,10 @@ const bool CURRENT_SENSOR_ID_IN_BYTE       = false;
 const uint32_t CURRENT_SENSOR_ROL_NUM_DATASIZE = 2;       // in bits
 const uint32_t CURRENT_SENSOR_ROL_NUM_START    = 7*8 + 3; // in bits
 const bool CURRENT_SENSOR_ROL_NUM_IN_BYTE  = false;
+
+const uint32_t CURRENT_SENSOR_ERROR_START = 7*8;
+const uint32_t CURRENT_SENSOR_ERROR_SATASIZE = 3;
+const bool CURRENT_SENSOR_ERROR_IN_BYTE = false;
 
 
 #endif  // SAILINGROBOT_CANBUS_DATAMAPPINGS_DEFS_H
