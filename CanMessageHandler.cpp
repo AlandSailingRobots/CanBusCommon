@@ -56,7 +56,7 @@ uint8_t CanMessageHandler::getErrorMessage() {
             getData(&errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
             break;
 
-        case default:
+        default:
             errorMessage = m_message.data[INDEX_ERROR_CODE];
             break;
 
@@ -86,7 +86,7 @@ void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
             encodeMessage(errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
             break;
 
-        case default:  // other part of the code still use this version
+        default:  // other part of the code still use this version
             if (m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) {
                 m_message.data[INDEX_ERROR_CODE] = errorMessage;
             }

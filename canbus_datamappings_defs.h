@@ -102,7 +102,7 @@ const uint32_t CURRENT_SENSOR_ROL_NUM_START    = 7*8 + 3; // in bits
 const bool CURRENT_SENSOR_ROL_NUM_IN_BYTE  = false;
 
 const uint32_t CURRENT_SENSOR_ERROR_START = 7*8;
-const uint32_t CURRENT_SENSOR_ERROR_SATASIZE = 3;
+const uint32_t CURRENT_SENSOR_ERROR_DATASIZE = 3;
 const bool CURRENT_SENSOR_ERROR_IN_BYTE = false;
 
 
