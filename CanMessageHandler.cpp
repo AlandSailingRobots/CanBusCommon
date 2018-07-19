@@ -39,7 +39,6 @@ CanMsg CanMessageHandler::getMessage() {
 }
 
 std::bitset<64> CanMessageHandler::getMessageInBitset() {
-    //canMsgToBitset(); // to make sure bitset is updated
     return m_message_bitset;
 }
 
@@ -118,8 +117,6 @@ bool CanMessageHandler::canMsgToBitset() {
 }
 
 bool CanMessageHandler::bitsetToCanMsg() { // no false output at the moment
-    //m_message.data = {0,0,0,0,0,0,0,0};
-    //std::fill(m_message.data, m_message.data+8, 0);
     for(int i=0; i<8; i++) {
         m_message.data[i] = 0; // reset here before copying in the bitset
         getData(&(m_message.data[i]), 7-i, 1, true);

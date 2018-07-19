@@ -26,11 +26,12 @@
 #include "Float16Compressor.h"
 #include "CanUtility.h"
 #include "canbus_defs.h"
-//#include <iostream>
+
 #if (defined(ARDUINO_AVR_UNO) || defined(ARDUINO_AVR_MEGA2560) || defined(ARDUINO_AVR_MEGA) || defined(ARDUINO_AVR_NANO))
  #define ON_ARDUINO_BOARD
 #endif
-#ifdef ON_ARDUINO_BOARD    // NEED to install ArduinoSTL, easy to do from ArduinoIDE with the library manager
+
+#ifdef ON_ARDUINO_BOARD    // NEED to install ArduinoSTL library, easy to do from ArduinoIDE with the library manager
  #include <math.h>
  #include <bitset>
  #include <type_traits>
@@ -53,8 +54,7 @@ class CanMessageHandler {
 
     CanMsg m_message;
     std::bitset<64> m_message_bitset;
-    // maybe delete the convert function from m_message to m_message_bitset
-    // as they can currently be filled separately
+    // NOTE: m_message and m_message_bitset can currently be filled separately
 
    public:
     /**
@@ -110,7 +110,6 @@ class CanMessageHandler {
 
     /**
      * Converts CanMsg.data into a bitset, hold by m_message_bitset
-     * NOTE: move this somewhere?
      */
     bool canMsgToBitset();
 
@@ -178,7 +177,11 @@ class CanMessageHandler {
         *dataToSet = static_cast<T>(data_container.to_ullong()); // NOTE: could add an option to return a bitset or not?
         #else
         // WARNING: ArduinoStl library used have no to_ullong function, we are limited to 4 bytes read on Arduino boards.
-        // NOTE   : please find a cleaner solution.
+        // NOTE   : please find a cleaner solution. Current solution consists in using the bitset constructor from a
+        //          string, so we convert the bitset<64> into string and then move its c_str() pointer by 32 so we have
+        //          the right side half of the bitset<64> used for the bitset<32> constructor.
+        //          The additional explicit declarations of templates are required by the arduino as the compiler have a
+        //          hard time resolving them by itself.
         std::bitset<32> arduino_sized_bitset(static_cast<std::string>(data_container.to_string<char, std::string::traits_type, std::string::allocator_type>().c_str()+32));
         *dataToSet = static_cast<T>(arduino_sized_bitset.to_ulong());  
         #endif
@@ -224,7 +227,7 @@ class CanMessageHandler {
      */
     template <class T> // AVOID USING FOR THE MOMENT, NO LONGER WORKS AFTER MODS ON getData()
     bool getMappedData(T* dataToSet, int lengthInBytes, long int minValue, long int maxValue) {
-        // *dataToSet=0;
+
         uint32_t data;
         bool success = getData(&data, lengthInBytes); 
 
@@ -247,11 +250,10 @@ class CanMessageHandler {
         #else
         uint64_t data;
         #endif
-        //bool success = getData(&data, lengthInBytes); 
+
         bool success = getData(&data, start, length, varInBytes);
 
         if (success) {
-            //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
             if (varInBytes) { length *= 8; start *= 8; }
             uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
             *dataToSet = static_cast<T>(CanUtility::mapInterval(
@@ -277,11 +279,9 @@ class CanMessageHandler {
      */
     template <class T>
     bool encodeMessage(int lengthInBytes, T data) {
-        // Serial.print("Max Data Index: ");
-        // Serial.println(MAX_DATA_INDEX);
+
         if (currentDataWriteIndex + lengthInBytes > MAX_DATA_INDEX + 1) {
             setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
-            // currentDataWriteIndex += lengthInBytes;
             return false;
         }
 
@@ -309,8 +309,8 @@ class CanMessageHandler {
         // add an if check: if b_data >> max value --> overflow
         if (varInBytes) { length *= 8; start *= 8; } // for simpler access using bytes
         std::bitset<64> b_data(data); // if data is a signed int, it'll get through a ulong or ullong cast
-                                    // to test
-        //std::bitset<64> mask((pow(2,length+start)-1)-(pow(2,start)-1));
+
+        // NOTE: Masks usage disabled for encoding as it leads to data corruption on the arduino side
         //std::bitset<64> mask(pow(2,length)-1);
 
         if(start > 0){ // again Arduino can't shift this bitset by zero...
@@ -346,7 +346,7 @@ class CanMessageHandler {
             return false;
         }
 */
-        // merging to container
+        // Merging to container
         m_message_bitset |= b_data;   
         return true;
     }
@@ -396,10 +396,9 @@ class CanMessageHandler {
 
         //auto possibilitiesDataCanHold = CanUtility::calcSizeOfBytes(lengthInBytes) - 1;
         if(varInBytes) { start *= 8; length *= 8; varInBytes =false; }; 
-        // NOTE: reset varInBytes to false or the call to encodeMessage will re-multiply by 8 start and length
+        // NOTE: Set varInBytes to false on this step or the call to encodeMessage will re-multiply by 8 start and length
 
         uint32_t maxValueFittingInGivenLength = (pow(2, length) - 1);
-        // uint_64 cast before
         uint32_t mappedData = static_cast<uint32_t>(CanUtility::mapInterval(
             data, minValue, maxValue, 0, maxValueFittingInGivenLength));
 

@@ -58,7 +58,9 @@ const int REQUEST_READING_TIME_DATASIZE = 4;
  * Rudder should go from -30 to +30 degrees
  * which gives an effective range of 60.
  */
+const int RUDDER_ANGLE_START = 0;
 const int RUDDER_ANGLE_DATASIZE = 2;
+const bool RUDDER_ANGLE_IN_BYTE = true;
 const int MAX_RUDDER_ANGLE = 30;
 const int MIN_RUDDER_ANGLE = -MAX_RUDDER_ANGLE;
 
@@ -66,7 +68,9 @@ const int MIN_RUDDER_ANGLE = -MAX_RUDDER_ANGLE;
  * Windsail should go from -13 to 13 degrees
  * range is 26
  */
+const int WINGSAIL_ANGLE_START = 2;
 const int WINGSAIL_ANGLE_DATASIZE = 1;
+const bool WINGSAIL_ANGLE_IN_BYTE = true;
 const int MAX_WINGSAIL_ANGLE = 13;
 const int MIN_WINGSAIL_ANGLE = -MAX_WINGSAIL_ANGLE;
 
@@ -76,12 +80,16 @@ const int WINDVANE_SELFSTEERING_ANGLE_MIN = 0;
 
 const int WINDVANE_ACTUATOR_POSITION_DATASIZE = 1;
 
+const int WINDVANE_SELFSTEERING_ON_START = 3;
 const int WINDVANE_SELFSTEERING_ON_DATASIZE = 1;
+const bool WINDVANE_SELFSTEERING_ON_IN_BYTE = true;
 
 //-----------------------------------------------------------
 
 // Used by Radio Controller Status message
+const int RADIOCONTROLLER_ON_START = 1;
 const int RADIOCONTROLLER_ON_DATASIZE = 1;
+const int RADIOCONTROLLER_ON_IN_BYTE = 1;
 //-----------------------------------------------------------
 
 // Used by Current Sensor message
