@@ -3,6 +3,9 @@ This library contains code and definitions that are used from both Arduino and R
 You will need to install the ArduinoSTL library. It's pretty straightforward using the library
 manager from the Arduino IDE.
 
+* This version needs the ArduinoSTL library. In ArduinoIDE go to "Sketch > Include Library > Manage Libraries..." and
+* install ArduinoSTL from there.
+
 ## Important Info ##
 
 * If you change any definitions you will have to recompile all code for both Arduino and RPI to get the updates up and running.

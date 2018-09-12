@@ -338,7 +338,7 @@ class CanMessageHandler {
             return false;
         }
 /*        if (!mask.any()) { // Assuming we never want an unset mask, it is a way to catch some unmatching length and start value
-                           // because mask is still 0 when overflowing at constructor step
+                             // because mask is still 0 when overflowing at constructor step
             #ifndef ON_ARDUINO_BOARD
             Logger::error("In CanMessageHandler::encodeMessage(): Mask has no bits set, check LENGTH and START params.\n");
             #endif

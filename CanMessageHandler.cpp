@@ -11,6 +11,11 @@
  *    There is only 7 bytes of data that can be encoded by using this class,
  *    because the last byte of the CanMsg is reserved for an error message.
  *
+ *    TODO: implement the use of bitsets for the actuators (already done but commented in the files), and
+ *    modify the CANbus files to delete the conversion steps from int8_t[8] to bitset<64> on the
+ *    arduino scripts and raspberry files (hardware nodes mostly)
+ *    TODO: update the error handling for all the messages
+ *
  ***************************************************************************************/
 
 #include "CanMessageHandler.h"
