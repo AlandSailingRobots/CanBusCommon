@@ -89,7 +89,7 @@ uint16_t compressedData = fltCompressor.compress(actualData);
 /*
 This will map the data 4.56 using 2 bytes (half-precision float) of the CanMsg
 */
-messageHandler.encodeMessage(cmp_temperature, SENSOR_DATA_START, SENSOR_DATA_DATASIZE, SENSOR_DATA_IN_BYTE);
+messageHandler.encodeMessage(compressedData, SENSOR_DATA_START, SENSOR_DATA_DATASIZE, SENSOR_DATA_IN_BYTE);
 
 
 
