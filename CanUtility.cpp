@@ -13,7 +13,7 @@
 #include "CanUtility.h"
 
 float CanUtility::mapInterval(float val, float fromMin, float fromMax, float toMin, float toMax) {
-    return (val - fromMin) / (fromMax - fromMin) * (toMax - toMin) + toMin;
+    return ((val - fromMin) / (fromMax - fromMin)) * (toMax - toMin) + toMin;
 }
 
 uint64_t CanUtility::calcSizeOfBytes(int noOfBytes) {

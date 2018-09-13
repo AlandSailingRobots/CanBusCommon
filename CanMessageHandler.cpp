@@ -11,6 +11,11 @@
  *    There is only 7 bytes of data that can be encoded by using this class,
  *    because the last byte of the CanMsg is reserved for an error message.
  *
+ *    TODO: implement the use of bitsets for the actuators (already done but commented in the files), and
+ *    modify the CANbus files to delete the conversion steps from int8_t[8] to bitset<64> on the
+ *    arduino scripts and raspberry files (hardware nodes mostly)
+ *    TODO: update the error handling for all the messages
+ *
  ***************************************************************************************/
 
 #include "CanMessageHandler.h"
@@ -38,99 +43,110 @@ CanMsg CanMessageHandler::getMessage() {
     return m_message;
 }
 
+std::bitset<64> CanMessageHandler::getMessageInBitset() {
+    return m_message_bitset;
+}
+
 uint8_t CanMessageHandler::getErrorMessage() {
-    return m_message.data[INDEX_ERROR_CODE];
+    uint8_t errorMessage;
+    switch(m_message.id) {
+
+        case MSG_ID_CURRENT_SENSOR_REQUEST:
+            getData(&errorMessage, CURRENT_SENSOR_ERROR_START, 
+                     CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE);
+            break;
+
+        case MSG_ID_MARINE_SENSOR_DATA:
+            getData(&errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
+            break;
+
+        default:
+            errorMessage = m_message.data[INDEX_ERROR_CODE];
+            break;
+
+    }
+    return errorMessage;
 }
 
 void CanMessageHandler::setErrorMessage(uint8_t errorMessage) {
-    if(m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) {
-        m_message.data[INDEX_ERROR_CODE] = errorMessage;
-    }
-}
 
-/*
-bool getCSData(float *dataToSet, uint8_t targetData) {
-    *dataToSet = 0;
-    Float16Compressor fltCompressor;
-    switch (targetData) {
-        case 0: //sensor id/m_element
-            *dataToSet = (uint8_t)m_message.data[0:1];
-            return true;
-        case 1: //current
-            *dataToSet = fltCompressor.decompress(m_message.data[6:8]);
-            return true;
-        case 2: //voltage
-            *dataToSet = fltCompressor.decompress(m_message.data[4:6]);
-            return true;
-        default:
-            return false;
-    }
+    switch(m_message.id) {
 
-}
-
-bool encodeFloatData(uint8_t position, bool isHalfPrecision, float data) {
-    if (isHalfPrecision) {
-        Float16Compressor fltCompressor;
-        uint16_t compressedFloatData = fltCompressor.compress(data);
-        // Maybe take care of bad positioning (position should be 2,4,6 in 99% of cases),
-        // and not only overflowing.
-        if (position + 2 =< 8 and position >= 2) {
-            m_message.data[position] = compressedFloatData;
-            return true;
-        } else {
-            setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
-            return false;
-        }
-    } else {
-        if (position + 4 =< 8 and position >= 2) {
-            m_message.data[position] = data;
-            return true;
-        } else {
-            setErrorMessage(ERROR_CANMSG_INDEX_OUT_OF_INTERVAL);
-            return false;
-        }
-        
-    }
-    
-}
-
-bool encodeCSMessage(int lengthInBytes, float data, uint8_t position) {
-// Kind of encode Float Message now, where we choose 16 or 32 bits.
-// position is 0 or 1 (from lower bit to higher bit -> 0 is right half), length is 16 or 32.
-// If length is 32, position value is not used (but still rise error if not 0 or 1).
-    Float16Compressor fltCompressor;
-    int bitMaskLeft  = 0xffff0000;
-    int bitMaskRight = 0x0000ffff;
-    if (encodeFloatData())
-    if (position>=2) {
-        // Create error message?
-        //setErrorMessage(SOMETHING);
-    } else {
-        if (lengthInBytes==16) {
-            uint16_t compressedFloatData = fltCompressor.compress(data);
-            if (position==0) {
-                m_message.data += 
+        case MSG_ID_CURRENT_SENSOR_REQUEST:
+            if(errorMessage >= 8) {
+                #ifndef ON_ARDUINO_BOARD
+                Logger::error("In CanMessageHandler::setErrorMessage(): error code value > current_sensor_max_error_value. Wrong error coded.");
+                #endif
+                // encode error 7('111') to make sure an error is still coded
+                encodeMessage(7, CURRENT_SENSOR_ERROR_START, 
+                               CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE); 
+            } else {
+                encodeMessage(errorMessage, CURRENT_SENSOR_ERROR_START,
+                               CURRENT_SENSOR_ERROR_DATASIZE, CURRENT_SENSOR_ERROR_IN_BYTE);
             }
-        } else if (lengthInBytes==32) {
-            
-        }
+            break;
+
+        case MSG_ID_MARINE_SENSOR_DATA:
+            encodeMessage(errorMessage, SENSOR_ERROR_START, SENSOR_ERROR_DATASIZE, SENSOR_ERROR_IN_BYTE);
+            break;
+
+        default:  // other part of the code still use this version
+            if (m_message.data[INDEX_ERROR_CODE] == NO_ERRORS) {
+                m_message.data[INDEX_ERROR_CODE] = errorMessage;
+            }
+            break;
+                   
     }
 
+}
 
-    for (int i = 0; i < lengthInBytes; i++) {
-      int dataIndex = currentDataWriteIndex + i;
-      m_message.data[dataIndex] = (data >> 8 * i) & 0xff;
+bool CanMessageHandler::canMsgToBitset() {
+    m_message_bitset = 0;
+
+    m_message_bitset |= (static_cast<std::bitset<64>>(m_message.data[7]));  // Arduino crash when shifting a bitset by zero...
+                                                              // So we do the first iteration before the loop in this case
+
+    for(int i=1; i<8; i++){
+        m_message_bitset |= (static_cast<std::bitset<64>>(m_message.data[7-i])) << i*8;
     }
-    currentDataWriteIndex += lengthInBytes;
+
+    if(!(m_message_bitset.any())){ // In case of overflow and some other wrong operations, the returned bitset is zeros only
+        // Check if we are compiling for arduino board, so we don't use the logger on it, arduino use AVR architecture. 
+        #ifndef ON_ARDUINO_BOARD
+        Logger::error("In CanMessageHandler::canMsgToBitset(): Data bits are unset, most likely a wrong operation");
+        #endif 
+
+        return false;
+    }
     return true;
 }
 
-bool generateHeader(int msgType) {
+bool CanMessageHandler::bitsetToCanMsg() { // no false output at the moment
+    for(int i=0; i<8; i++) {
+        m_message.data[i] = 0; // reset here before copying in the bitset
+        getData(&(m_message.data[i]), 7-i, 1, true);
+    }
+
+    return true;
+}
+
+/*bool generateHeader(int msgType) {
     // Add definition of canMsgType or just use the already defined ID defs
     switch (canMsgType) {
-        case CURRENT_SENSOR_MSG:
-            m_message.header.ide = CURRENT_SENSOR_ID
-            m_message.
+        case MSG_ID_CURRENT_SENSOR_REQUEST: // temporarily using this value because it's unused 
+            generateCurrentSensorHeader();
+            encodeMessage(T data, uint start, uint length, bool varInBytes = true)
             return true;
     }
 }*/
+
+bool CanMessageHandler::generateCurrentSensorHeader(uint8_t sensorID, uint8_t rolling_number) {
+    // Current sensor header infos:   ID   | rol_num | error_value
+    // Number of bits             :    3        2           3
+    bool success = true;
+    bool varInBytes = false;
+    success &= encodeMessage(sensorID, 7*8 + 5, 3, varInBytes); // May define things like current_sensor_id_start_bits etc.
+    success &= encodeMessage(rolling_number, 7*8 + 3, 2, varInBytes);
+    return success;
+}
+

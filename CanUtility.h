@@ -33,7 +33,7 @@ class CanUtility {
     /**
      * Calculates maxvalue of a no of bytes.
      *
-     * Eg. 1 byte --> 256 and so on
+     * Eg. 1 byte --> 256 and so on   (should be 255?)
      *
      * @param noOfBytes
      * @return The maximum value of the given no of bytes
